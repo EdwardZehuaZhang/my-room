@@ -47,7 +47,7 @@
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Use CSS modules (EntryScreen.module.css). Follow the exact component code and CSS from the UI/UX spec. The card should feel like a HUD overlay — frosted glass over the dark void. Avatar buttons use CSS custom property --av-color for dynamic styling. No external UI libraries."
     },
     {

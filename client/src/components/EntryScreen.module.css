@@ -1,0 +1,194 @@
+/* ── Animated background ── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(180, 255, 80, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 60%, rgba(78, 205, 196, 0.05) 0%, transparent 60%),
+    var(--bg-void);
+  background-size: 200% 200%;
+  animation: drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* ── Glass card ── */
+.card {
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 2.5rem 2.2rem 2rem;
+  width: min(420px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+/* ── Eyebrow ── */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+/* ── Title ── */
+.title {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 8vw, 3.2rem);
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+/* ── Subtitle ── */
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ── Name input ── */
+.fieldLabel {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.nameInput {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.nameInput::placeholder {
+  color: var(--text-muted);
+}
+
+.nameInput:focus {
+  border-color: var(--border-focus);
+}
+
+/* ── Avatar picker ── */
+.avatarLabel {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.avatarRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ── Capsule button ── */
+.capsule {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  border: 2px solid transparent;
+  background: var(--av-color);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  animation: bob 1.1s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+.capsule:hover {
+  border-color: var(--av-color);
+}
+
+.capsuleSelected {
+  border-color: var(--av-color);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--av-color) 50%, transparent);
+}
+
+.capsuleName {
+  display: block;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+/* ── Checkmark badge ── */
+.check {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--av-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #0A0A0F;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* ── Join button ── */
+.joinBtn {
+  width: 100%;
+  padding: 0.85rem;
+  border: none;
+  border-radius: var(--radius-btn);
+  background: var(--lime);
+  color: #0A0A0F;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.joinBtn:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.joinBtn:not(:disabled):hover {
+  opacity: 0.88;
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .card {
+    padding: 1.8rem 1.2rem 1.4rem;
+  }
+
+  .avatarRow {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

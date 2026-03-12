@@ -5,6 +5,8 @@
 - CSS modules for component styles, globals.css for design system variables
 - strict: true in both client and server tsconfig
 - No external UI libraries — plain CSS modules only
+- Zustand store at client/src/store.ts — usePlayerStore for player state
+- Components live in client/src/components/ with co-located CSS modules
 
 ## 2026-03-12 - US-007
 - What was implemented: Full project scaffolding with client (Vite+React+TS) and server (Node+Express+Socket.IO+TS)
@@ -23,4 +25,18 @@
   - Vite scaffold creates tsconfig.app.json (strict: true already set) with separate tsconfig.node.json
   - client package.json has `"type": "module"` — use ESM imports
   - server uses NodeNext module resolution
+---
+
+## 2026-03-12 - US-001
+- What was implemented: Entry screen with name input, avatar color picker, and join flow
+- Files changed:
+  - client/src/store.ts — Zustand store with name, avatarColor, joined state + setPlayer action
+  - client/src/components/EntryScreen.tsx — Full entry screen component with glass card, animated background, avatar picker
+  - client/src/components/EntryScreen.module.css — CSS module with frosted glass card, bob animation, responsive layout
+  - client/src/App.tsx — Conditional rendering: EntryScreen when not joined, scene placeholder when joined
+- **Learnings for future iterations:**
+  - Zustand store is at client/src/store.ts — future stories should import usePlayerStore from there
+  - Components go in client/src/components/ directory
+  - CSS custom properties (--av-color) work with React inline styles via `as React.CSSProperties` cast
+  - App.tsx uses usePlayerStore `joined` flag to switch between entry screen and 3D scene
 ---
