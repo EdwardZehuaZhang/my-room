@@ -17,6 +17,8 @@
 - Joystick refs (movement + camera) created in App.tsx and passed to both SceneContent (R3F) and MobileJoysticks (HTML overlay)
 - nipplejs dynamically imported in MobileJoysticks.tsx — never at module level (accesses window)
 - MobileJoysticks zones hidden on desktop via @media (hover: hover) and (pointer: fine)
+- useChatStore in store.ts manages chat messages; chatSocketRef exported from useSocket.ts for HTML components to emit chat events
+- ChatPanel is an HTML overlay (outside Canvas) — uses chatSocketRef to emit, chatFocusRef for WASD suppression
 
 ## 2026-03-12 - US-007
 - What was implemented: Full project scaffolding with client (Vite+React+TS) and server (Node+Express+Socket.IO+TS)
@@ -131,4 +133,27 @@
   - Distance fade computed in useFrame by measuring camera.position.distanceTo(meshRef.position) — uses a DOM ref to set opacity directly for perf
   - Html component inside a mesh inherits the mesh's transforms, so position={[0,1.5,0]} is relative to mesh center
   - zIndexRange={[0,0]} helps prevent Html from layering over other UI elements
+---
+
+## 2026-03-12 - US-006
+- What was implemented: Global text chat with frosted glass ChatPanel, server chat_message/chat_broadcast events, system join/leave messages
+  - Server: chat_message handler rebroadcasts as chat_broadcast to all sockets, enforces 280 char max (truncate)
+  - Client: useChatStore (Zustand) for chat messages with 200 message cap (oldest evicted)
+  - Client: ChatPanel component — collapsible, frosted glass, auto-scroll, WASD suppression via chatFocusRef
+  - Client: System messages for join/leave rendered as muted italic
+  - Client: chatSocketRef module-level export from useSocket.ts so ChatPanel (outside Canvas) can emit
+  - Mobile responsive: full-width at bottom with 50vh max-height at max-width 600px
+- Files changed:
+  - server/src/index.ts — Added chat_message event handler with 280 char truncation, rebroadcasts chat_broadcast
+  - client/src/store.ts — Added useChatStore, ChatMessage interface, 200 message cap
+  - client/src/hooks/useSocket.ts — Added chat_broadcast listener, system messages for join/leave, chatSocketRef export
+  - client/src/components/ChatPanel.tsx — Chat panel component with toggle, messages list, input with WASD suppression
+  - client/src/components/ChatPanel.module.css — Frosted glass panel styles, mobile responsive
+  - client/src/App.tsx — Added ChatPanel to scene layout
+  - prd.json — Marked US-006 passes: true
+- **Learnings for future iterations:**
+  - chatSocketRef (module-level) bridges R3F (useSocket inside Canvas) and HTML overlays (ChatPanel outside Canvas) — avoids prop drilling socket through Canvas boundary
+  - useChatStore.addMessage evicts oldest messages when exceeding 200 cap using splice
+  - e.stopPropagation() on chat input's onKeyDown prevents WASD from reaching the 3D scene; chatFocusRef.current set on focus/blur prevents useFrame from reading keys
+  - System messages use player ID lookup via getState() before removePlayer to capture the leaving player's name
 ---

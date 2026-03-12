@@ -91,6 +91,21 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('chat_message', (data: { text: string }) => {
+    const player = players.get(socket.id);
+    if (!player) return;
+
+    // Server enforces max 280 chars (truncate silently)
+    const text = String(data.text).slice(0, 280);
+
+    io.emit('chat_broadcast', {
+      id: player.id,
+      name: player.name,
+      text,
+      timestamp: Date.now(),
+    });
+  });
+
   socket.on('disconnect', () => {
     const player = players.get(socket.id);
     if (player) {

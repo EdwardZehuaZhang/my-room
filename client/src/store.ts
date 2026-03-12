@@ -37,6 +37,35 @@ interface RemotePlayersState {
   clearPlayers: () => void;
 }
 
+export interface ChatMessage {
+  id: string;
+  name: string;
+  text: string;
+  timestamp: number;
+  system?: boolean;
+}
+
+const MAX_CHAT_MESSAGES = 200;
+
+interface ChatState {
+  messages: ChatMessage[];
+  addMessage: (msg: ChatMessage) => void;
+  clearMessages: () => void;
+}
+
+export const useChatStore = create<ChatState>((set) => ({
+  messages: [],
+  addMessage: (msg) =>
+    set((state) => {
+      const next = [...state.messages, msg];
+      if (next.length > MAX_CHAT_MESSAGES) {
+        next.splice(0, next.length - MAX_CHAT_MESSAGES);
+      }
+      return { messages: next };
+    }),
+  clearMessages: () => set({ messages: [] }),
+}));
+
 export const useRemotePlayersStore = create<RemotePlayersState>((set) => ({
   players: new Map(),
   serverFull: false,

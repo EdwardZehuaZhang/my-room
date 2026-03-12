@@ -6,6 +6,7 @@ import LoadingOverlay from './components/LoadingOverlay.tsx';
 import SceneContent from './components/SceneContent.tsx';
 import ServerFullModal from './components/ServerFullModal.tsx';
 import MobileJoysticks from './components/MobileJoysticks.tsx';
+import ChatPanel from './components/ChatPanel.tsx';
 
 const splatUrl = import.meta.env.VITE_SPLAT_URL as string | undefined;
 
@@ -55,6 +56,7 @@ export default function App() {
     <>
       <LoadingOverlay progress={progress} done={loaded} />
       <ServerFullModal />
+      <ChatPanel />
       <MobileJoysticks joystickRef={joystickRef} joystickCamRef={joystickCamRef} />
       <Canvas
         style={{

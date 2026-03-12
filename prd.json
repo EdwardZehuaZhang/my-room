@@ -155,7 +155,7 @@
         "Typecheck passes"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "notes": "Follow ChatPanel.tsx and ChatPanel.module.css from UI spec exactly. The chat should feel like a translucent HUD overlay — frosted glass, mono font for messages, lime accent for names and send button. Collapsed state must not steal pointer events from 3D canvas. No profanity filter required. No chat persistence on server."
     }
   ]
