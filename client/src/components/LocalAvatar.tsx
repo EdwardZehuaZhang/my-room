@@ -1,18 +1,23 @@
 import { useRef, useEffect, useMemo } from 'react';
 import type { MutableRefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Html, useGLTF, useAnimations } from '@react-three/drei';
+import { useGLTF, useAnimations, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { usePlayerStore, chatFocusRef } from '../store.ts';
-import { getModel, MODEL_URLS } from '../models.ts';
-import styles from './Nametag.module.css';
+import { getModel } from '../models.ts';
 
 const MOVE_SPEED = 0.05;
 const CAM_BEHIND = 0.12;
 const CAM_ABOVE = 0.06;
 
-MODEL_URLS.forEach((url) => useGLTF.preload(url));
+// Pre-allocated reusable objects — never allocate in useFrame
+const _camForward = new THREE.Vector3();
+const _camRight = new THREE.Vector3();
+const _moveDir = new THREE.Vector3();
+const _up = new THREE.Vector3(0, 1, 0);
+const _mat = new THREE.Matrix4();
+const _targetQuat = new THREE.Quaternion();
 
 interface LocalAvatarProps {
   localPosRef: MutableRefObject<[number, number, number]>;
@@ -28,6 +33,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
   const groupRef = useRef<THREE.Group>(null);
   const { camera, gl } = useThree();
 
+  // Only load the selected model
   const { scene, animations } = useGLTF(modelDef.url);
   const clone = useMemo(() => cloneSkeleton(scene) as THREE.Group, [scene]);
   const { actions } = useAnimations(animations, groupRef);
@@ -68,11 +74,9 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     };
     const onPointerMove = (e: PointerEvent) => {
       if (!isDragging.current) return;
-      const dx = e.clientX - lastMouse.current.x;
-      const dy = e.clientY - lastMouse.current.y;
+      orbitRef.current.theta -= (e.clientX - lastMouse.current.x) * 0.005;
+      orbitRef.current.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + (e.clientY - lastMouse.current.y) * 0.005));
       lastMouse.current = { x: e.clientX, y: e.clientY };
-      orbitRef.current.theta -= dx * 0.005;
-      orbitRef.current.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + dy * 0.005));
     };
     const onPointerUp = () => { isDragging.current = false; };
     dom.addEventListener('pointerdown', onPointerDown);
@@ -110,23 +114,19 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
     const isMoving = len > 0.01;
 
-    const camForward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), orbitRef.current.theta - Math.PI);
-    const camRight = new THREE.Vector3().crossVectors(camForward, new THREE.Vector3(0, 1, 0)).normalize();
+    // Reuse pre-allocated vectors
+    _camForward.set(0, 0, -1).applyAxisAngle(_up, orbitRef.current.theta - Math.PI);
+    _camRight.crossVectors(_camForward, _up).normalize();
 
     if (isMoving) {
       const normX = moveX / Math.max(len, 1);
       const normZ = moveZ / Math.max(len, 1);
-      group.position.x += (camRight.x * normX + camForward.x * normZ) * MOVE_SPEED * delta;
-      group.position.z += (camRight.z * normX + camForward.z * normZ) * MOVE_SPEED * delta;
-      const moveDir = new THREE.Vector3(
-        camRight.x * normX + camForward.x * normZ, 0,
-        camRight.z * normX + camForward.z * normZ
-      ).normalize();
-      group.quaternion.slerp(
-        new THREE.Quaternion().setFromRotationMatrix(
-          new THREE.Matrix4().lookAt(new THREE.Vector3(), moveDir, new THREE.Vector3(0, 1, 0))
-        ), 0.15
-      );
+      const v = MOVE_SPEED * delta;
+      group.position.x += (_camRight.x * normX + _camForward.x * normZ) * v;
+      group.position.z += (_camRight.z * normX + _camForward.z * normZ) * v;
+      _moveDir.set(_camRight.x * normX + _camForward.x * normZ, 0, _camRight.z * normX + _camForward.z * normZ).normalize();
+      _targetQuat.setFromRotationMatrix(_mat.lookAt(new THREE.Vector3(), _moveDir, _up));
+      group.quaternion.slerp(_targetQuat, 0.15);
     }
     group.position.y = Math.max(0, group.position.y);
 
@@ -154,9 +154,17 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
   return (
     <group ref={groupRef}>
       <primitive object={clone} scale={modelDef.scale} rotation={[0, modelDef.rotationY, 0]} />
-      <Html center distanceFactor={0.15} position={[0, modelDef.scale * 2.2, 0]} style={{ pointerEvents: 'none' }} zIndexRange={[0, 0]}>
-        <div className={styles.nametag}>{name}</div>
-      </Html>
+      <Text
+        position={[0, modelDef.scale * 2.4, 0]}
+        fontSize={modelDef.scale * 1.2}
+        color="white"
+        anchorX="center"
+        anchorY="bottom"
+        outlineWidth={modelDef.scale * 0.08}
+        outlineColor="black"
+      >
+        {name}
+      </Text>
     </group>
   );
 }
