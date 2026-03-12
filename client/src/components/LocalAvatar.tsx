@@ -7,17 +7,20 @@ import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { usePlayerStore, chatFocusRef } from '../store.ts';
 import { getModel } from '../models.ts';
 
-const MOVE_SPEED = 0.05;
+// All avatars will be normalized to this world-unit height
+const TARGET_HEIGHT = 0.012;
 const CAM_BEHIND = 0.12;
 const CAM_ABOVE = 0.06;
+const MOVE_SPEED = 0.05;
 
-// Pre-allocated reusable objects — never allocate in useFrame
+// Pre-allocated reusable objects
 const _camForward = new THREE.Vector3();
 const _camRight = new THREE.Vector3();
 const _moveDir = new THREE.Vector3();
 const _up = new THREE.Vector3(0, 1, 0);
 const _mat = new THREE.Matrix4();
 const _targetQuat = new THREE.Quaternion();
+const _origin = new THREE.Vector3();
 
 interface LocalAvatarProps {
   localPosRef: MutableRefObject<[number, number, number]>;
@@ -33,10 +36,16 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
   const groupRef = useRef<THREE.Group>(null);
   const { camera, gl } = useThree();
 
-  // Only load the selected model
   const { scene, animations } = useGLTF(modelDef.url);
   const clone = useMemo(() => cloneSkeleton(scene) as THREE.Group, [scene]);
   const { actions } = useAnimations(animations, groupRef);
+
+  // Normalize scale so all models are the same height in-world
+  const normalizedScale = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(clone);
+    const h = box.max.y - box.min.y;
+    return h > 0 ? TARGET_HEIGHT / h : TARGET_HEIGHT;
+  }, [clone]);
 
   const keys = useRef<Record<string, boolean>>({});
   const orbitRef = useRef({ theta: Math.PI, phi: 0.3 });
@@ -114,7 +123,6 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
     const isMoving = len > 0.01;
 
-    // Reuse pre-allocated vectors
     _camForward.set(0, 0, -1).applyAxisAngle(_up, orbitRef.current.theta - Math.PI);
     _camRight.crossVectors(_camForward, _up).normalize();
 
@@ -125,7 +133,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
       group.position.x += (_camRight.x * normX + _camForward.x * normZ) * v;
       group.position.z += (_camRight.z * normX + _camForward.z * normZ) * v;
       _moveDir.set(_camRight.x * normX + _camForward.x * normZ, 0, _camRight.z * normX + _camForward.z * normZ).normalize();
-      _targetQuat.setFromRotationMatrix(_mat.lookAt(new THREE.Vector3(), _moveDir, _up));
+      _targetQuat.setFromRotationMatrix(_mat.lookAt(_origin, _moveDir, _up));
       group.quaternion.slerp(_targetQuat, 0.15);
     }
     group.position.y = Math.max(0, group.position.y);
@@ -148,19 +156,19 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
       group.position.y + CAM_ABOVE + CAM_BEHIND * Math.sin(phi),
       group.position.z + CAM_BEHIND * Math.cos(theta) * Math.cos(phi),
     );
-    camera.lookAt(group.position.x, group.position.y + modelDef.scale * 0.8, group.position.z);
+    camera.lookAt(group.position.x, group.position.y + TARGET_HEIGHT * 0.5, group.position.z);
   });
 
   return (
     <group ref={groupRef}>
-      <primitive object={clone} scale={modelDef.scale} rotation={[0, modelDef.rotationY, 0]} />
+      <primitive object={clone} scale={normalizedScale} rotation={[0, modelDef.rotationY, 0]} />
       <Text
-        position={[0, modelDef.scale * 2.4, 0]}
-        fontSize={modelDef.scale * 1.2}
+        position={[0, TARGET_HEIGHT * 1.3, 0]}
+        fontSize={TARGET_HEIGHT * 0.6}
         color="white"
         anchorX="center"
         anchorY="bottom"
-        outlineWidth={modelDef.scale * 0.08}
+        outlineWidth={TARGET_HEIGHT * 0.04}
         outlineColor="black"
       >
         {name}

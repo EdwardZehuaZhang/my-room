@@ -7,11 +7,11 @@ import { useRemotePlayersStore } from '../store.ts';
 import type { RemotePlayer } from '../store.ts';
 import { getModel } from '../models.ts';
 
+const TARGET_HEIGHT = 0.012;
 const LERP_FACTOR = 0.15;
 const FADE_NEAR = 0.3;
 const FADE_FAR = 0.6;
 
-// Pre-allocated reusable objects
 const _prevPos = new THREE.Vector3();
 
 function RemoteAvatar({ player }: { player: RemotePlayer }) {
@@ -26,6 +26,12 @@ function RemoteAvatar({ player }: { player: RemotePlayer }) {
   const clone = useMemo(() => cloneSkeleton(scene) as THREE.Group, [scene]);
   const { actions } = useAnimations(animations, groupRef);
   const currentAction = useRef('');
+
+  const normalizedScale = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(clone);
+    const h = box.max.y - box.min.y;
+    return h > 0 ? TARGET_HEIGHT / h : TARGET_HEIGHT;
+  }, [clone]);
 
   useMemo(() => {
     setTimeout(() => {
@@ -59,7 +65,6 @@ function RemoteAvatar({ player }: { player: RemotePlayer }) {
       currentAction.current = nextAction;
     }
 
-    // Fade nametag by distance
     if (textRef.current) {
       const dist = camera.position.distanceTo(groupRef.current.position);
       const opacity = dist <= FADE_NEAR ? 1 : dist >= FADE_FAR ? 0 : 1 - (dist - FADE_NEAR) / (FADE_FAR - FADE_NEAR);
@@ -69,15 +74,15 @@ function RemoteAvatar({ player }: { player: RemotePlayer }) {
 
   return (
     <group ref={groupRef} position={player.position}>
-      <primitive object={clone} scale={modelDef.scale} rotation={[0, modelDef.rotationY, 0]} />
+      <primitive object={clone} scale={normalizedScale} rotation={[0, modelDef.rotationY, 0]} />
       <Text
         ref={textRef}
-        position={[0, modelDef.scale * 2.4, 0]}
-        fontSize={modelDef.scale * 1.2}
+        position={[0, TARGET_HEIGHT * 1.3, 0]}
+        fontSize={TARGET_HEIGHT * 0.6}
         color="white"
         anchorX="center"
         anchorY="bottom"
-        outlineWidth={modelDef.scale * 0.08}
+        outlineWidth={TARGET_HEIGHT * 0.04}
         outlineColor="black"
         material-transparent
         material-opacity={1}
