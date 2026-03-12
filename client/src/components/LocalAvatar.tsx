@@ -1,19 +1,20 @@
-import { useRef, useEffect, MutableRefObject } from 'react';
+import { useRef, useEffect } from 'react';
+import type { MutableRefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { usePlayerStore } from '../store.ts';
 import { chatFocusRef } from '../store.ts';
 
-const MOVE_SPEED = 5;
-const CAM_BEHIND = 4;
-const CAM_ABOVE = 2;
-const BOB_IDLE_AMP = 0.06;
+const MOVE_SPEED = 0.05;
+const CAM_BEHIND = 0.04;
+const CAM_ABOVE = 0.02;
+const BOB_IDLE_AMP = 0.0006;
 const BOB_IDLE_FREQ = 1.1;
-const BOB_WALK_AMP = 0.1;
+const BOB_WALK_AMP = 0.001;
 const BOB_WALK_FREQ = 2.4;
 const LEAN_ANGLE = 0.08; // radians
 
-const capsuleGeometry = new THREE.CapsuleGeometry(0.3, 0.8, 8, 16);
+const capsuleGeometry = new THREE.CapsuleGeometry(0.003, 0.008, 8, 16);
 
 interface LocalAvatarProps {
   localPosRef: MutableRefObject<[number, number, number]>;
@@ -194,3 +195,4 @@ export default function LocalAvatar({
     </mesh>
   );
 }
+

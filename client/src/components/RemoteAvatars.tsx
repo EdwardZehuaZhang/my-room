@@ -7,10 +7,10 @@ import type { RemotePlayer } from '../store.ts';
 import styles from './Nametag.module.css';
 
 const LERP_FACTOR = 0.15;
-const FADE_NEAR = 10;
-const FADE_FAR = 20;
+const FADE_NEAR = 0.1;
+const FADE_FAR = 0.2;
 
-const capsuleGeometry = new THREE.CapsuleGeometry(0.3, 0.8, 8, 16);
+const capsuleGeometry = new THREE.CapsuleGeometry(0.003, 0.008, 8, 16);
 
 function RemoteAvatar({ player }: { player: RemotePlayer }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -52,7 +52,7 @@ function RemoteAvatar({ player }: { player: RemotePlayer }) {
         <Html
           center
           distanceFactor={8}
-          position={[0, 1.5, 0]}
+          position={[0, 0.015, 0]}
           style={{ pointerEvents: 'none' }}
           zIndexRange={[0, 0]}
         >
@@ -76,3 +76,4 @@ export default function RemoteAvatars() {
     </>
   );
 }
+
