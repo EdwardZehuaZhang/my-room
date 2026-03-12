@@ -1,10 +1,11 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import * as THREE from 'three';
-import { useMemo } from 'react';
 import type { ModelDef } from '../models.ts';
+
+const PREVIEW_TARGET_HEIGHT = 1.6;
 
 function PreviewModel({ modelDef }: { modelDef: ModelDef }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -18,27 +19,16 @@ function PreviewModel({ modelDef }: { modelDef: ModelDef }) {
     if (idleName && actions[idleName]) actions[idleName]!.reset().play();
   }, [actions, modelDef]);
 
-  // Compute normalized scale to fit in a 1.6-unit tall box
-  const normalizedScale = useMemo(() => {
-    const box = new THREE.Box3().setFromObject(clone);
-    const height = box.max.y - box.min.y;
-    return height > 0 ? 1.6 / height : 1;
-  }, [clone]);
+  const normalizedScale = PREVIEW_TARGET_HEIGHT / modelDef.heightHint;
+  // Center the model vertically
+  const offsetY = -(modelDef.heightHint / 2) * normalizedScale;
 
-  // Slow auto-rotate
   useFrame((_, delta) => {
     if (groupRef.current) groupRef.current.rotation.y += delta * 0.6;
   });
 
-  const box = useMemo(() => {
-    const b = new THREE.Box3().setFromObject(clone);
-    return b;
-  }, [clone]);
-
-  const centerY = (box.min.y + box.max.y) / 2 * normalizedScale;
-
   return (
-    <group ref={groupRef} position={[0, -centerY, 0]}>
+    <group ref={groupRef} position={[0, offsetY, 0]}>
       <primitive object={clone} scale={normalizedScale} rotation={[0, modelDef.rotationY, 0]} />
     </group>
   );

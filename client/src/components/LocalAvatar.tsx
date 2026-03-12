@@ -40,12 +40,8 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
   const clone = useMemo(() => cloneSkeleton(scene) as THREE.Group, [scene]);
   const { actions } = useAnimations(animations, groupRef);
 
-  // Normalize scale so all models are the same height in-world
-  const normalizedScale = useMemo(() => {
-    const box = new THREE.Box3().setFromObject(clone);
-    const h = box.max.y - box.min.y;
-    return h > 0 ? TARGET_HEIGHT / h : TARGET_HEIGHT;
-  }, [clone]);
+  // Normalize using known heightHint so all models match in-world
+  const normalizedScale = TARGET_HEIGHT / modelDef.heightHint;
 
   const keys = useRef<Record<string, boolean>>({});
   const orbitRef = useRef({ theta: Math.PI, phi: 0.3 });
@@ -176,3 +172,4 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     </group>
   );
 }
+

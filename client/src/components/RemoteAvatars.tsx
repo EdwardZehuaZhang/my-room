@@ -27,11 +27,7 @@ function RemoteAvatar({ player }: { player: RemotePlayer }) {
   const { actions } = useAnimations(animations, groupRef);
   const currentAction = useRef('');
 
-  const normalizedScale = useMemo(() => {
-    const box = new THREE.Box3().setFromObject(clone);
-    const h = box.max.y - box.min.y;
-    return h > 0 ? TARGET_HEIGHT / h : TARGET_HEIGHT;
-  }, [clone]);
+  const normalizedScale = TARGET_HEIGHT / modelDef.heightHint;
 
   useMemo(() => {
     setTimeout(() => {
@@ -99,3 +95,4 @@ export default function RemoteAvatars() {
     <>{Array.from(players.values()).map((player) => <RemoteAvatar key={player.id} player={player} />)}</>
   );
 }
+
