@@ -51,5 +51,12 @@ export default function SplatScene({ splatUrl, onProgress, onLoaded }: SplatScen
 
   if (!splat) return null;
 
-  return <primitive object={splat} />;
+  const yOffset = parseFloat((import.meta.env.VITE_SPLAT_Y_OFFSET as string) ?? '0');
+
+  return (
+    <group position={[0, yOffset, 0]}>
+      <primitive object={splat} />
+    </group>
+  );
 }
+
