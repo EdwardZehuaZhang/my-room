@@ -1,0 +1,25 @@
+.zone {
+  position: fixed;
+  bottom: 0;
+  width: 50%;
+  height: 40%;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.zone[data-side='left'] {
+  left: 0;
+}
+
+.zone[data-side='right'] {
+  right: 0;
+}
+
+/* Hide on desktop */
+@media (hover: hover) and (pointer: fine) {
+  .zone {
+    display: none;
+  }
+}

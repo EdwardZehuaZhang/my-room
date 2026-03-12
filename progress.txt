@@ -13,6 +13,10 @@
 - useSocket hook returns localPosRef/localRotRef — avatar movement should write to these from useFrame
 - useRemotePlayersStore in store.ts manages remote players; use getState() in useFrame for perf
 - Socket hooks live in client/src/hooks/
+- chatFocusRef exported from store.ts — set .current=true to suppress WASD (used by chat, read by LocalAvatar)
+- Joystick refs (movement + camera) created in App.tsx and passed to both SceneContent (R3F) and MobileJoysticks (HTML overlay)
+- nipplejs dynamically imported in MobileJoysticks.tsx — never at module level (accesses window)
+- MobileJoysticks zones hidden on desktop via @media (hover: hover) and (pointer: fine)
 
 ## 2026-03-12 - US-007
 - What was implemented: Full project scaffolding with client (Vite+React+TS) and server (Node+Express+Socket.IO+TS)
@@ -89,4 +93,24 @@
   - SceneContent.tsx is the main 3D scene wrapper inside Canvas — add new 3D components there
   - ServerFullModal uses resetJoined() to return to entry screen — this action was added to usePlayerStore
   - Socket events are only handled in useEffect (never in render), satisfying the AC requirement
+---
+
+## 2026-03-12 - US-003
+- What was implemented: Third-person avatar movement with WASD/mouse orbit on desktop and nipplejs joysticks on mobile
+- Files changed:
+  - client/src/components/LocalAvatar.tsx — Local player capsule with WASD movement, mouse drag orbit camera, procedural idle bob + walk bob/lean animations, Y-clamp, network ref sync
+  - client/src/components/MobileJoysticks.tsx — Left (movement) and right (camera) nipplejs joystick zones, dynamically imported
+  - client/src/components/MobileJoysticks.module.css — Fixed-position joystick zones, touch-action: none, hidden on desktop
+  - client/src/components/SceneContent.tsx — Added LocalAvatar with socket refs and joystick refs
+  - client/src/App.tsx — Added joystick refs, MobileJoysticks overlay, touch-action: none + user-select: none on Canvas
+  - client/src/store.ts — Added chatFocusRef for WASD suppression (US-006 integration point)
+  - client/package.json — Added nipplejs dependency
+  - prd.json — Marked US-003 passes: true
+- **Learnings for future iterations:**
+  - Joystick refs must be created in App.tsx (above Canvas) and passed down since MobileJoysticks is HTML overlay outside R3F, while LocalAvatar reads them inside R3F useFrame
+  - chatFocusRef is a plain object (not React ref) exported from store.ts — US-006 chat input should set chatFocusRef.current = true/false on focus/blur
+  - Camera orbit uses spherical coords (theta/phi) stored in a ref — theta controls horizontal orbit, phi controls vertical angle
+  - Movement is relative to camera orientation so WASD always feels natural regardless of camera angle
+  - nipplejs zones are hidden on desktop using @media (hover: hover) and (pointer: fine) — this avoids the zones capturing pointer events on desktop
+  - Procedural animations (bob/lean) are applied directly in useFrame by modifying mesh.position.y and mesh.rotation.x
 ---

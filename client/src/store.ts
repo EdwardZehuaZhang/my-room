@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 
+/** Shared ref: when true, WASD input is suppressed (e.g. chat input focused) */
+export const chatFocusRef = { current: false };
+
 interface PlayerState {
   name: string;
   avatarColor: string;

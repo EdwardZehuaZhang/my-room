@@ -1,10 +1,11 @@
-import { Suspense, useCallback, useState } from 'react';
+import { Suspense, useCallback, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { usePlayerStore } from './store.ts';
 import EntryScreen from './components/EntryScreen.tsx';
 import LoadingOverlay from './components/LoadingOverlay.tsx';
 import SceneContent from './components/SceneContent.tsx';
 import ServerFullModal from './components/ServerFullModal.tsx';
+import MobileJoysticks from './components/MobileJoysticks.tsx';
 
 const splatUrl = import.meta.env.VITE_SPLAT_URL as string | undefined;
 
@@ -31,6 +32,10 @@ export default function App() {
   const [progress, setProgress] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
+  // Shared joystick refs: written by MobileJoysticks (HTML), read by LocalAvatar (R3F)
+  const joystickRef = useRef({ x: 0, y: 0 });
+  const joystickCamRef = useRef({ x: 0, y: 0 });
+
   // Stable callback refs to avoid re-creating the splat instance
   const onProgress = useCallback((pct: number) => setProgress(pct), []);
   const onLoaded = useCallback(() => {
@@ -50,8 +55,14 @@ export default function App() {
     <>
       <LoadingOverlay progress={progress} done={loaded} />
       <ServerFullModal />
+      <MobileJoysticks joystickRef={joystickRef} joystickCamRef={joystickCamRef} />
       <Canvas
-        style={{ width: '100%', height: '100%' }}
+        style={{
+          width: '100%',
+          height: '100%',
+          touchAction: 'none',
+          userSelect: 'none',
+        }}
         gl={{ antialias: false }}
         camera={{ fov: 60, near: 0.1, far: 1000 }}
       >
@@ -60,6 +71,8 @@ export default function App() {
             splatUrl={splatUrl}
             onProgress={onProgress}
             onLoaded={onLoaded}
+            joystickRef={joystickRef}
+            joystickCamRef={joystickCamRef}
           />
         </Suspense>
       </Canvas>

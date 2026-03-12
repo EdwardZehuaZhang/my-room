@@ -114,7 +114,7 @@
         "Typecheck passes"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Do NOT use @react-three/rapier or any physics engine. Procedural animations only via Three.js transforms in useFrame. Movement uses a ref to check chat focus state — when chat is focused, skip all WASD processing. nipplejs zones should use touch-action: none. Mobile joystick styling should be translucent to match the HUD overlay aesthetic."
     },
     {
