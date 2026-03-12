@@ -133,7 +133,7 @@
         "Typecheck passes"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "notes": "Use drei's <Html center distanceFactor={8}> for simplicity — avoid manual quaternion math. Style follows spec exactly: mono font, dark glass pill, 0.04em letter-spacing, whiteSpace nowrap. Opacity transition 0.3s for smooth distance fade."
     },
     {

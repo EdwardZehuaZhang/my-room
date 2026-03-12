@@ -114,3 +114,21 @@
   - nipplejs zones are hidden on desktop using @media (hover: hover) and (pointer: fine) — this avoids the zones capturing pointer events on desktop
   - Procedural animations (bob/lean) are applied directly in useFrame by modifying mesh.position.y and mesh.rotation.x
 ---
+
+## 2026-03-12 - US-005
+- What was implemented: Billboard nametags for remote player avatars using drei's `<Html center>` component
+  - Nametags positioned 1.5 units above avatar center with pill-shaped frosted glass background
+  - Distance-based opacity fade: 1.0 at ≤10 units, 0.0 at ≥20 units from camera
+  - CSS module for nametag styling (IBM Plex Mono 11px, #EDEAE0, dark glass pill)
+  - Local player avatar does NOT show a nametag (nametags only on RemoteAvatar)
+  - pointerEvents: none so nametags don't intercept 3D interactions
+- Files changed:
+  - client/src/components/RemoteAvatars.tsx — Added Html nametag inside each remote avatar mesh, distance fade in useFrame
+  - client/src/components/Nametag.module.css — Pill-shaped frosted glass nametag styles
+  - prd.json — Marked US-005 passes: true
+- **Learnings for future iterations:**
+  - drei `<Html center distanceFactor={8}>` auto-billboards to face camera — no manual quaternion math needed
+  - Distance fade computed in useFrame by measuring camera.position.distanceTo(meshRef.position) — uses a DOM ref to set opacity directly for perf
+  - Html component inside a mesh inherits the mesh's transforms, so position={[0,1.5,0]} is relative to mesh center
+  - zIndexRange={[0,0]} helps prevent Html from layering over other UI elements
+---
