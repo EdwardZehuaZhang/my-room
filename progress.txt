@@ -1,0 +1,159 @@
+## Codebase Patterns
+- Use `npm install --include=dev` on this machine — global npm config has `omit=dev` set
+- Client typecheck: `cd client && node_modules/.bin/tsc --noEmit` (npx tsc resolves to wrong package)
+- Server typecheck: `cd server && node_modules/.bin/tsc --noEmit`
+- CSS modules for component styles, globals.css for design system variables
+- strict: true in both client and server tsconfig
+- No external UI libraries — plain CSS modules only
+- Zustand store at client/src/store.ts — usePlayerStore for player state
+- Components live in client/src/components/ with co-located CSS modules
+- Splat renderer: @lumaai/luma-web LumaSplatsThree — has onProgress/onLoad callbacks, is a Three.js Mesh (use <primitive>)
+- App.tsx owns Canvas + Suspense boundary for the 3D scene; loading state managed via useState
+- SceneContent.tsx is the 3D scene wrapper inside Canvas — add new 3D components there
+- useSocket hook returns localPosRef/localRotRef — avatar movement should write to these from useFrame
+- useRemotePlayersStore in store.ts manages remote players; use getState() in useFrame for perf
+- Socket hooks live in client/src/hooks/
+- chatFocusRef exported from store.ts — set .current=true to suppress WASD (used by chat, read by LocalAvatar)
+- Joystick refs (movement + camera) created in App.tsx and passed to both SceneContent (R3F) and MobileJoysticks (HTML overlay)
+- nipplejs dynamically imported in MobileJoysticks.tsx — never at module level (accesses window)
+- MobileJoysticks zones hidden on desktop via @media (hover: hover) and (pointer: fine)
+- useChatStore in store.ts manages chat messages; chatSocketRef exported from useSocket.ts for HTML components to emit chat events
+- ChatPanel is an HTML overlay (outside Canvas) — uses chatSocketRef to emit, chatFocusRef for WASD suppression
+
+## 2026-03-12 - US-007
+- What was implemented: Full project scaffolding with client (Vite+React+TS) and server (Node+Express+Socket.IO+TS)
+- Files changed:
+  - client/ — Vite React TS scaffold with R3F, drei, socket.io-client, zustand deps
+  - server/ — Express + Socket.IO scaffold with /health endpoint
+  - vercel.json, railway.toml — deployment configs
+  - client/.env.example, server/.env.example — environment variable templates
+  - README.md — prerequisites, dev instructions, env table, deploy steps
+  - client/src/globals.css — full design system CSS variables
+  - client/index.html — Google Fonts (Syne, IBM Plex Mono), viewport meta
+  - .gitignore — node_modules, dist, .env exclusions
+- **Learnings for future iterations:**
+  - npm on this machine has global `omit=dev` — always use `--include=dev` flag
+  - `npx tsc` resolves to wrong package — use `node_modules/.bin/tsc` directly
+  - Vite scaffold creates tsconfig.app.json (strict: true already set) with separate tsconfig.node.json
+  - client package.json has `"type": "module"` — use ESM imports
+  - server uses NodeNext module resolution
+---
+
+## 2026-03-12 - US-001
+- What was implemented: Entry screen with name input, avatar color picker, and join flow
+- Files changed:
+  - client/src/store.ts — Zustand store with name, avatarColor, joined state + setPlayer action
+  - client/src/components/EntryScreen.tsx — Full entry screen component with glass card, animated background, avatar picker
+  - client/src/components/EntryScreen.module.css — CSS module with frosted glass card, bob animation, responsive layout
+  - client/src/App.tsx — Conditional rendering: EntryScreen when not joined, scene placeholder when joined
+- **Learnings for future iterations:**
+  - Zustand store is at client/src/store.ts — future stories should import usePlayerStore from there
+  - Components go in client/src/components/ directory
+  - CSS custom properties (--av-color) work with React inline styles via `as React.CSSProperties` cast
+  - App.tsx uses usePlayerStore `joined` flag to switch between entry screen and 3D scene
+---
+
+## 2026-03-12 - US-002
+- What was implemented: Splat scene loading with @lumaai/luma-web, loading overlay with progress bar, env var handling
+- Files changed:
+  - client/src/components/SplatScene.tsx — LumaSplatsThree renderer with onProgress/onLoad, camera setup (0,2,4)
+  - client/src/components/LoadingOverlay.tsx — Progress overlay with percentage, track bar, fade-out via data-done attribute
+  - client/src/components/LoadingOverlay.module.css — Dark void bg, lime progress bar with glow, mono font, CSS fadeOut animation
+  - client/src/App.tsx — Canvas + Suspense wrapper, MissingUrl fallback, progress/loaded state management
+  - client/package.json — Added @lumaai/luma-web dependency
+- **Learnings for future iterations:**
+  - LumaSplatsThree is a Three.js Mesh — render via `<primitive object={instance} />` in R3F
+  - onProgress returns `{ progress: number }` where progress is 0-1 (multiply by 100 for %)
+  - Loading overlay uses CSS animation-play-state trick: paused by default, running when data-done attribute present
+  - Canvas lives in App.tsx with Suspense fallback={null} — splat loads async without blocking
+  - VITE_SPLAT_URL read via import.meta.env — shows lime mono message if undefined
+---
+
+## 2026-03-12 - US-004
+- What was implemented: Socket.IO server multiplayer sync and client networking
+  - Server: player state Map, UUID assignment, MAX_USERS enforcement, player_joined/player_moved/player_left events, 10Hz throttle
+  - Client: useSocket hook (connects, emits player_join on mount/reconnect, emits player_move at 10Hz via setInterval)
+  - Client: useRemotePlayersStore (Zustand) for remote player state with add/remove/update actions
+  - Client: RemoteAvatars component renders capsule meshes with lerped positions (factor 0.15)
+  - Client: ServerFullModal with red-tinted glass card, returns to entry screen
+  - Client: SceneContent wrapper groups 3D content + socket hook inside Canvas
+  - App.tsx updated to use SceneContent and render ServerFullModal
+- Files changed:
+  - server/src/index.ts — Full multiplayer logic with player state Map, throttle, UUID
+  - client/src/store.ts — Added useRemotePlayersStore, RemotePlayer type, resetJoined action
+  - client/src/hooks/useSocket.ts — Socket.IO hook with 10Hz emit interval
+  - client/src/components/RemoteAvatars.tsx — Remote player capsule meshes with lerp
+  - client/src/components/ServerFullModal.tsx — Server full modal overlay
+  - client/src/components/ServerFullModal.module.css — Red-tinted glass card styles
+  - client/src/components/SceneContent.tsx — Scene wrapper with socket + splat + avatars
+  - client/src/App.tsx — Integrated SceneContent and ServerFullModal
+  - prd.json — Marked US-004 passes: true
+- **Learnings for future iterations:**
+  - useSocket hook returns localPosRef/localRotRef — future avatar movement (US-003) should write to these refs from useFrame
+  - Remote player lerp uses getState() inside useFrame for latest data without re-renders
+  - Server throttles per-socket via lastEmitTime Map — client should still emit at 10Hz (setInterval 100ms)
+  - SceneContent.tsx is the main 3D scene wrapper inside Canvas — add new 3D components there
+  - ServerFullModal uses resetJoined() to return to entry screen — this action was added to usePlayerStore
+  - Socket events are only handled in useEffect (never in render), satisfying the AC requirement
+---
+
+## 2026-03-12 - US-003
+- What was implemented: Third-person avatar movement with WASD/mouse orbit on desktop and nipplejs joysticks on mobile
+- Files changed:
+  - client/src/components/LocalAvatar.tsx — Local player capsule with WASD movement, mouse drag orbit camera, procedural idle bob + walk bob/lean animations, Y-clamp, network ref sync
+  - client/src/components/MobileJoysticks.tsx — Left (movement) and right (camera) nipplejs joystick zones, dynamically imported
+  - client/src/components/MobileJoysticks.module.css — Fixed-position joystick zones, touch-action: none, hidden on desktop
+  - client/src/components/SceneContent.tsx — Added LocalAvatar with socket refs and joystick refs
+  - client/src/App.tsx — Added joystick refs, MobileJoysticks overlay, touch-action: none + user-select: none on Canvas
+  - client/src/store.ts — Added chatFocusRef for WASD suppression (US-006 integration point)
+  - client/package.json — Added nipplejs dependency
+  - prd.json — Marked US-003 passes: true
+- **Learnings for future iterations:**
+  - Joystick refs must be created in App.tsx (above Canvas) and passed down since MobileJoysticks is HTML overlay outside R3F, while LocalAvatar reads them inside R3F useFrame
+  - chatFocusRef is a plain object (not React ref) exported from store.ts — US-006 chat input should set chatFocusRef.current = true/false on focus/blur
+  - Camera orbit uses spherical coords (theta/phi) stored in a ref — theta controls horizontal orbit, phi controls vertical angle
+  - Movement is relative to camera orientation so WASD always feels natural regardless of camera angle
+  - nipplejs zones are hidden on desktop using @media (hover: hover) and (pointer: fine) — this avoids the zones capturing pointer events on desktop
+  - Procedural animations (bob/lean) are applied directly in useFrame by modifying mesh.position.y and mesh.rotation.x
+---
+
+## 2026-03-12 - US-005
+- What was implemented: Billboard nametags for remote player avatars using drei's `<Html center>` component
+  - Nametags positioned 1.5 units above avatar center with pill-shaped frosted glass background
+  - Distance-based opacity fade: 1.0 at ≤10 units, 0.0 at ≥20 units from camera
+  - CSS module for nametag styling (IBM Plex Mono 11px, #EDEAE0, dark glass pill)
+  - Local player avatar does NOT show a nametag (nametags only on RemoteAvatar)
+  - pointerEvents: none so nametags don't intercept 3D interactions
+- Files changed:
+  - client/src/components/RemoteAvatars.tsx — Added Html nametag inside each remote avatar mesh, distance fade in useFrame
+  - client/src/components/Nametag.module.css — Pill-shaped frosted glass nametag styles
+  - prd.json — Marked US-005 passes: true
+- **Learnings for future iterations:**
+  - drei `<Html center distanceFactor={8}>` auto-billboards to face camera — no manual quaternion math needed
+  - Distance fade computed in useFrame by measuring camera.position.distanceTo(meshRef.position) — uses a DOM ref to set opacity directly for perf
+  - Html component inside a mesh inherits the mesh's transforms, so position={[0,1.5,0]} is relative to mesh center
+  - zIndexRange={[0,0]} helps prevent Html from layering over other UI elements
+---
+
+## 2026-03-12 - US-006
+- What was implemented: Global text chat with frosted glass ChatPanel, server chat_message/chat_broadcast events, system join/leave messages
+  - Server: chat_message handler rebroadcasts as chat_broadcast to all sockets, enforces 280 char max (truncate)
+  - Client: useChatStore (Zustand) for chat messages with 200 message cap (oldest evicted)
+  - Client: ChatPanel component — collapsible, frosted glass, auto-scroll, WASD suppression via chatFocusRef
+  - Client: System messages for join/leave rendered as muted italic
+  - Client: chatSocketRef module-level export from useSocket.ts so ChatPanel (outside Canvas) can emit
+  - Mobile responsive: full-width at bottom with 50vh max-height at max-width 600px
+- Files changed:
+  - server/src/index.ts — Added chat_message event handler with 280 char truncation, rebroadcasts chat_broadcast
+  - client/src/store.ts — Added useChatStore, ChatMessage interface, 200 message cap
+  - client/src/hooks/useSocket.ts — Added chat_broadcast listener, system messages for join/leave, chatSocketRef export
+  - client/src/components/ChatPanel.tsx — Chat panel component with toggle, messages list, input with WASD suppression
+  - client/src/components/ChatPanel.module.css — Frosted glass panel styles, mobile responsive
+  - client/src/App.tsx — Added ChatPanel to scene layout
+  - prd.json — Marked US-006 passes: true
+- **Learnings for future iterations:**
+  - chatSocketRef (module-level) bridges R3F (useSocket inside Canvas) and HTML overlays (ChatPanel outside Canvas) — avoids prop drilling socket through Canvas boundary
+  - useChatStore.addMessage evicts oldest messages when exceeding 200 cap using splice
+  - e.stopPropagation() on chat input's onKeyDown prevents WASD from reaching the 3D scene; chatFocusRef.current set on focus/blur prevents useFrame from reading keys
+  - System messages use player ID lookup via getState() before removePlayer to capture the leaving player's name
+---
