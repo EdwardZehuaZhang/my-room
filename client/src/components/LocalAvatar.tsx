@@ -80,7 +80,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     const onPointerMove = (e: PointerEvent) => {
       if (!isDragging.current) return;
       orbitRef.current.theta -= (e.clientX - lastMouse.current.x) * 0.005;
-      orbitRef.current.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + (e.clientY - lastMouse.current.y) * 0.005));
+      orbitRef.current.phi = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + (e.clientY - lastMouse.current.y) * 0.005));
       lastMouse.current = { x: e.clientX, y: e.clientY };
     };
     const onPointerUp = () => { isDragging.current = false; };
@@ -113,7 +113,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
 
     if (Math.abs(joystickCamRef.current.x) > 0.05 || Math.abs(joystickCamRef.current.y) > 0.05) {
       orbitRef.current.theta -= joystickCamRef.current.x * 2.5 * delta;
-      orbitRef.current.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + joystickCamRef.current.y * 2.5 * delta));
+      orbitRef.current.phi = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + joystickCamRef.current.y * 2.5 * delta));
     }
 
     const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
@@ -172,4 +172,5 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     </group>
   );
 }
+
 
