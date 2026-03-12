@@ -23,7 +23,7 @@
         "Typecheck passes"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "Pure Vite SPA — do NOT use Next.js or any SSR framework. TypeScript strict mode everywhere with no 'any' escapes unless a third-party library forces it (add comment explaining why). Use CSS modules for component styles. Design aesthetic: dark void base (#080810), frosted glass panels (rgba(12,12,20,0.72) + blur(18px) saturate(160%)), electric lime accent (#B4FF50), IBM Plex Mono for data, Syne for headings."
     },
     {

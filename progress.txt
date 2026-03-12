@@ -1,0 +1,26 @@
+## Codebase Patterns
+- Use `npm install --include=dev` on this machine — global npm config has `omit=dev` set
+- Client typecheck: `cd client && node_modules/.bin/tsc --noEmit` (npx tsc resolves to wrong package)
+- Server typecheck: `cd server && node_modules/.bin/tsc --noEmit`
+- CSS modules for component styles, globals.css for design system variables
+- strict: true in both client and server tsconfig
+- No external UI libraries — plain CSS modules only
+
+## 2026-03-12 - US-007
+- What was implemented: Full project scaffolding with client (Vite+React+TS) and server (Node+Express+Socket.IO+TS)
+- Files changed:
+  - client/ — Vite React TS scaffold with R3F, drei, socket.io-client, zustand deps
+  - server/ — Express + Socket.IO scaffold with /health endpoint
+  - vercel.json, railway.toml — deployment configs
+  - client/.env.example, server/.env.example — environment variable templates
+  - README.md — prerequisites, dev instructions, env table, deploy steps
+  - client/src/globals.css — full design system CSS variables
+  - client/index.html — Google Fonts (Syne, IBM Plex Mono), viewport meta
+  - .gitignore — node_modules, dist, .env exclusions
+- **Learnings for future iterations:**
+  - npm on this machine has global `omit=dev` — always use `--include=dev` flag
+  - `npx tsc` resolves to wrong package — use `node_modules/.bin/tsc` directly
+  - Vite scaffold creates tsconfig.app.json (strict: true already set) with separate tsconfig.node.json
+  - client package.json has `"type": "module"` — use ESM imports
+  - server uses NodeNext module resolution
+---
