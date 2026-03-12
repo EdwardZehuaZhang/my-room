@@ -55,4 +55,5 @@ export function getModel(key: string): ModelDef {
   return AVATAR_MODELS.find((m) => m.key === key) ?? DEFAULT_MODEL;
 }
 
-export const MODEL_URLS = AVATAR_MODELS.map((m) => m.url);
+// Preload is done per-component based on selected model
+
