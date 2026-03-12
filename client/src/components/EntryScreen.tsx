@@ -1,25 +1,17 @@
 import { useState } from 'react';
 import { usePlayerStore } from '../store.ts';
+import { AVATAR_MODELS } from '../models.ts';
 import styles from './EntryScreen.module.css';
-
-const AVATARS = [
-  { color: '#FF6B6B', label: 'Coral' },
-  { color: '#4ECDC4', label: 'Teal' },
-  { color: '#45B7D1', label: 'Sky' },
-  { color: '#96CEB4', label: 'Sage' },
-] as const;
 
 export default function EntryScreen() {
   const [name, setName] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedModel, setSelectedModel] = useState('robot');
   const setPlayer = usePlayerStore((s) => s.setPlayer);
 
-  const canJoin = name.trim().length > 0 && selectedColor !== '';
+  const canJoin = name.trim().length > 0;
 
   const handleJoin = () => {
-    if (canJoin) {
-      setPlayer(name.trim(), selectedColor);
-    }
+    if (canJoin) setPlayer(name.trim(), selectedModel);
   };
 
   return (
@@ -27,54 +19,48 @@ export default function EntryScreen() {
       <div className={styles.card}>
         <span className={styles.eyebrow}>{'// enter the room'}</span>
         <h1 className={styles.title}>my-room</h1>
-        <p className={styles.subtitle}>
-          A shared space. Up to 100 visitors at once.
-        </p>
+        <p className={styles.subtitle}>A shared space. Up to 100 visitors at once.</p>
 
-        {/* Name input */}
         <div>
           <label className={styles.fieldLabel}>Your name</label>
           <input
             className={styles.nameInput}
             type="text"
             maxLength={20}
-            placeholder="Enter name…"
+            placeholder="Enter name..."
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
           />
         </div>
 
-        {/* Avatar picker */}
         <div>
           <span className={styles.avatarLabel}>Choose avatar</span>
           <div className={styles.avatarRow}>
-            {AVATARS.map(({ color, label }) => (
-              <div key={color}>
+            {AVATAR_MODELS.map((model) => (
+              <div key={model.key}>
                 <button
                   type="button"
-                  className={`${styles.capsule} ${selectedColor === color ? styles.capsuleSelected : ''}`}
-                  style={{ '--av-color': color } as React.CSSProperties}
-                  onClick={() => setSelectedColor(color)}
-                  aria-label={label}
+                  className={`${styles.capsule} ${selectedModel === model.key ? styles.capsuleSelected : ''}`}
+                  onClick={() => setSelectedModel(model.key)}
+                  aria-label={model.name}
+                  title={model.name}
                 >
-                  {selectedColor === color && (
-                    <span className={styles.check}>✓</span>
-                  )}
+                  {selectedModel === model.key && <span className={styles.check}>&#10003;</span>}
                 </button>
-                <span className={styles.capsuleName}>{label}</span>
+                <span className={styles.capsuleName}>{model.name}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Join button */}
         <button
           type="button"
           className={styles.joinBtn}
           disabled={!canJoin}
           onClick={handleJoin}
         >
-          Enter space →
+          Enter space &#8594;
         </button>
       </div>
     </div>

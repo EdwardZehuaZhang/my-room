@@ -18,12 +18,12 @@ const MAX_USERS = parseInt(process.env['MAX_USERS'] ?? '100', 10);
 interface PlayerState {
   id: string;
   name: string;
-  avatarColor: string;
+  modelKey: string;
   position: [number, number, number];
   rotation: [number, number, number, number];
 }
 
-/** In-memory player state â€” no database, no disk writes */
+/** In-memory player state â€?no database, no disk writes */
 const players = new Map<string, PlayerState>();
 
 /** Throttle tracking: last emit timestamp per socket */
@@ -43,13 +43,13 @@ io.on('connection', (socket) => {
   }
 
   const playerId = randomUUID();
-  console.log(`[connect] ${socket.id} â†’ ${playerId}`);
+  console.log(`[connect] ${socket.id} â†?${playerId}`);
 
-  socket.on('player_join', (data: { name: string; avatarColor: string }) => {
+  socket.on('player_join', (data: { name: string; modelKey: string }) => {
     const player: PlayerState = {
       id: playerId,
       name: data.name,
-      avatarColor: data.avatarColor,
+      modelKey: data.modelKey ?? 'robot',
       position: [0, 0, 0],
       rotation: [0, 0, 0, 1],
     };
@@ -120,3 +120,5 @@ io.on('connection', (socket) => {
 httpServer.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+

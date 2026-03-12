@@ -1,28 +1,27 @@
 import { create } from 'zustand';
 
-/** Shared ref: when true, WASD input is suppressed (e.g. chat input focused) */
 export const chatFocusRef = { current: false };
 
 interface PlayerState {
   name: string;
-  avatarColor: string;
+  modelKey: string;
   joined: boolean;
-  setPlayer: (name: string, avatarColor: string) => void;
+  setPlayer: (name: string, modelKey: string) => void;
   resetJoined: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set) => ({
   name: '',
-  avatarColor: '',
+  modelKey: 'robot',
   joined: false,
-  setPlayer: (name, avatarColor) => set({ name, avatarColor, joined: true }),
+  setPlayer: (name, modelKey) => set({ name, modelKey, joined: true }),
   resetJoined: () => set({ joined: false }),
 }));
 
 export interface RemotePlayer {
   id: string;
   name: string;
-  avatarColor: string;
+  modelKey: string;
   position: [number, number, number];
   rotation: [number, number, number, number];
 }
@@ -58,9 +57,7 @@ export const useChatStore = create<ChatState>((set) => ({
   addMessage: (msg) =>
     set((state) => {
       const next = [...state.messages, msg];
-      if (next.length > MAX_CHAT_MESSAGES) {
-        next.splice(0, next.length - MAX_CHAT_MESSAGES);
-      }
+      if (next.length > MAX_CHAT_MESSAGES) next.splice(0, next.length - MAX_CHAT_MESSAGES);
       return { messages: next };
     }),
   clearMessages: () => set({ messages: [] }),
