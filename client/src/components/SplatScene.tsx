@@ -60,3 +60,4 @@ export default function SplatScene({ splatUrl, onProgress, onLoaded }: SplatScen
   );
 }
 
+
