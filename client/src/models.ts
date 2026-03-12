@@ -4,7 +4,8 @@ export interface ModelDef {
   url: string;
   idleAnim: string;
   walkAnim: string;
-  scale: number;
+  /** Known model height in its native units — used to normalize size consistently */
+  heightHint: number;
   rotationY: number;
 }
 
@@ -17,7 +18,7 @@ export const AVATAR_MODELS: ModelDef[] = [
     url: `${BASE}RobotExpressive/RobotExpressive.glb`,
     idleAnim: 'Idle',
     walkAnim: 'Walking',
-    scale: 0.006,
+    heightHint: 1.7,
     rotationY: Math.PI,
   },
   {
@@ -26,7 +27,7 @@ export const AVATAR_MODELS: ModelDef[] = [
     url: `${BASE}Soldier.glb`,
     idleAnim: 'Idle',
     walkAnim: 'Walk',
-    scale: 0.006,
+    heightHint: 170,
     rotationY: Math.PI,
   },
   {
@@ -35,7 +36,7 @@ export const AVATAR_MODELS: ModelDef[] = [
     url: `${BASE}Michelle.glb`,
     idleAnim: '',
     walkAnim: '',
-    scale: 0.006,
+    heightHint: 170,
     rotationY: Math.PI,
   },
   {
@@ -44,7 +45,7 @@ export const AVATAR_MODELS: ModelDef[] = [
     url: `${BASE}Xbot.glb`,
     idleAnim: '',
     walkAnim: '',
-    scale: 0.006,
+    heightHint: 170,
     rotationY: Math.PI,
   },
 ];
@@ -54,6 +55,3 @@ export const DEFAULT_MODEL = AVATAR_MODELS[0];
 export function getModel(key: string): ModelDef {
   return AVATAR_MODELS.find((m) => m.key === key) ?? DEFAULT_MODEL;
 }
-
-// Preload is done per-component based on selected model
-
