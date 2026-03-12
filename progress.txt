@@ -9,6 +9,10 @@
 - Components live in client/src/components/ with co-located CSS modules
 - Splat renderer: @lumaai/luma-web LumaSplatsThree — has onProgress/onLoad callbacks, is a Three.js Mesh (use <primitive>)
 - App.tsx owns Canvas + Suspense boundary for the 3D scene; loading state managed via useState
+- SceneContent.tsx is the 3D scene wrapper inside Canvas — add new 3D components there
+- useSocket hook returns localPosRef/localRotRef — avatar movement should write to these from useFrame
+- useRemotePlayersStore in store.ts manages remote players; use getState() in useFrame for perf
+- Socket hooks live in client/src/hooks/
 
 ## 2026-03-12 - US-007
 - What was implemented: Full project scaffolding with client (Vite+React+TS) and server (Node+Express+Socket.IO+TS)
@@ -57,4 +61,32 @@
   - Loading overlay uses CSS animation-play-state trick: paused by default, running when data-done attribute present
   - Canvas lives in App.tsx with Suspense fallback={null} — splat loads async without blocking
   - VITE_SPLAT_URL read via import.meta.env — shows lime mono message if undefined
+---
+
+## 2026-03-12 - US-004
+- What was implemented: Socket.IO server multiplayer sync and client networking
+  - Server: player state Map, UUID assignment, MAX_USERS enforcement, player_joined/player_moved/player_left events, 10Hz throttle
+  - Client: useSocket hook (connects, emits player_join on mount/reconnect, emits player_move at 10Hz via setInterval)
+  - Client: useRemotePlayersStore (Zustand) for remote player state with add/remove/update actions
+  - Client: RemoteAvatars component renders capsule meshes with lerped positions (factor 0.15)
+  - Client: ServerFullModal with red-tinted glass card, returns to entry screen
+  - Client: SceneContent wrapper groups 3D content + socket hook inside Canvas
+  - App.tsx updated to use SceneContent and render ServerFullModal
+- Files changed:
+  - server/src/index.ts — Full multiplayer logic with player state Map, throttle, UUID
+  - client/src/store.ts — Added useRemotePlayersStore, RemotePlayer type, resetJoined action
+  - client/src/hooks/useSocket.ts — Socket.IO hook with 10Hz emit interval
+  - client/src/components/RemoteAvatars.tsx — Remote player capsule meshes with lerp
+  - client/src/components/ServerFullModal.tsx — Server full modal overlay
+  - client/src/components/ServerFullModal.module.css — Red-tinted glass card styles
+  - client/src/components/SceneContent.tsx — Scene wrapper with socket + splat + avatars
+  - client/src/App.tsx — Integrated SceneContent and ServerFullModal
+  - prd.json — Marked US-004 passes: true
+- **Learnings for future iterations:**
+  - useSocket hook returns localPosRef/localRotRef — future avatar movement (US-003) should write to these refs from useFrame
+  - Remote player lerp uses getState() inside useFrame for latest data without re-renders
+  - Server throttles per-socket via lastEmitTime Map — client should still emit at 10Hz (setInterval 100ms)
+  - SceneContent.tsx is the main 3D scene wrapper inside Canvas — add new 3D components there
+  - ServerFullModal uses resetJoined() to return to entry screen — this action was added to usePlayerStore
+  - Socket events are only handled in useEffect (never in render), satisfying the AC requirement
 ---

@@ -1,9 +1,10 @@
-import { Suspense, useCallback, useRef, useState } from 'react';
+import { Suspense, useCallback, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { usePlayerStore } from './store.ts';
 import EntryScreen from './components/EntryScreen.tsx';
 import LoadingOverlay from './components/LoadingOverlay.tsx';
-import SplatScene from './components/SplatScene.tsx';
+import SceneContent from './components/SceneContent.tsx';
+import ServerFullModal from './components/ServerFullModal.tsx';
 
 const splatUrl = import.meta.env.VITE_SPLAT_URL as string | undefined;
 
@@ -48,13 +49,14 @@ export default function App() {
   return (
     <>
       <LoadingOverlay progress={progress} done={loaded} />
+      <ServerFullModal />
       <Canvas
         style={{ width: '100%', height: '100%' }}
         gl={{ antialias: false }}
         camera={{ fov: 60, near: 0.1, far: 1000 }}
       >
         <Suspense fallback={null}>
-          <SplatScene
+          <SceneContent
             splatUrl={splatUrl}
             onProgress={onProgress}
             onLoaded={onLoaded}

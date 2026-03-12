@@ -92,7 +92,7 @@
         "Typecheck passes"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "10Hz network cap is a HARD ceiling — implement with setInterval(100) and skip emit if previous interval hasn't cleared. Server full modal reuses the .card container from entry screen with same glass aesthetic but red-tinted border. No authentication, no sessions, no persistence. PORT from env, default 3001."
     },
     {

@@ -5,6 +5,7 @@ interface PlayerState {
   avatarColor: string;
   joined: boolean;
   setPlayer: (name: string, avatarColor: string) => void;
+  resetJoined: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set) => ({
@@ -12,4 +13,50 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   avatarColor: '',
   joined: false,
   setPlayer: (name, avatarColor) => set({ name, avatarColor, joined: true }),
+  resetJoined: () => set({ joined: false }),
+}));
+
+export interface RemotePlayer {
+  id: string;
+  name: string;
+  avatarColor: string;
+  position: [number, number, number];
+  rotation: [number, number, number, number];
+}
+
+interface RemotePlayersState {
+  players: Map<string, RemotePlayer>;
+  serverFull: boolean;
+  addPlayer: (player: RemotePlayer) => void;
+  removePlayer: (id: string) => void;
+  updatePlayer: (id: string, position: [number, number, number], rotation: [number, number, number, number]) => void;
+  setServerFull: (full: boolean) => void;
+  clearPlayers: () => void;
+}
+
+export const useRemotePlayersStore = create<RemotePlayersState>((set) => ({
+  players: new Map(),
+  serverFull: false,
+  addPlayer: (player) =>
+    set((state) => {
+      const next = new Map(state.players);
+      next.set(player.id, player);
+      return { players: next };
+    }),
+  removePlayer: (id) =>
+    set((state) => {
+      const next = new Map(state.players);
+      next.delete(id);
+      return { players: next };
+    }),
+  updatePlayer: (id, position, rotation) =>
+    set((state) => {
+      const existing = state.players.get(id);
+      if (!existing) return state;
+      const next = new Map(state.players);
+      next.set(id, { ...existing, position, rotation });
+      return { players: next };
+    }),
+  setServerFull: (full) => set({ serverFull: full }),
+  clearPlayers: () => set({ players: new Map(), serverFull: false }),
 }));
