@@ -1,8 +1,10 @@
 import { useRef, useEffect } from 'react';
 import type { MutableRefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { usePlayerStore } from '../store.ts';
+import styles from './Nametag.module.css';
 import { chatFocusRef } from '../store.ts';
 
 const MOVE_SPEED = 0.05;
@@ -32,6 +34,7 @@ export default function LocalAvatar({
   joystickCamRef,
 }: LocalAvatarProps) {
   const avatarColor = usePlayerStore((s) => s.avatarColor);
+  const name = usePlayerStore((s) => s.name);
   const meshRef = useRef<THREE.Mesh>(null);
   const { camera, gl } = useThree();
 
@@ -192,7 +195,11 @@ export default function LocalAvatar({
   return (
     <mesh ref={meshRef} geometry={capsuleGeometry}>
       <meshStandardMaterial color={avatarColor} />
+      <Html center distanceFactor={0.08} position={[0, 0.015, 0]} style={{ pointerEvents: 'none' }} zIndexRange={[0, 0]}>
+        <div className={styles.nametag}>{name}</div>
+      </Html>
     </mesh>
   );
 }
+
 
