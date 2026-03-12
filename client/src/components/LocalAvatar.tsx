@@ -4,17 +4,15 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { Html, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
-import { usePlayerStore } from '../store.ts';
+import { usePlayerStore, chatFocusRef } from '../store.ts';
+import { getModel, MODEL_URLS } from '../models.ts';
 import styles from './Nametag.module.css';
-import { chatFocusRef } from '../store.ts';
 
 const MOVE_SPEED = 0.05;
 const CAM_BEHIND = 0.12;
 const CAM_ABOVE = 0.06;
-const AVATAR_SCALE = 0.006;
-const MODEL_URL = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
 
-useGLTF.preload(MODEL_URL);
+MODEL_URLS.forEach((url) => useGLTF.preload(url));
 
 interface LocalAvatarProps {
   localPosRef: MutableRefObject<[number, number, number]>;
@@ -23,64 +21,46 @@ interface LocalAvatarProps {
   joystickCamRef: MutableRefObject<{ x: number; y: number }>;
 }
 
-export default function LocalAvatar({
-  localPosRef,
-  localRotRef,
-  joystickRef,
-  joystickCamRef,
-}: LocalAvatarProps) {
-  const avatarColor = usePlayerStore((s) => s.avatarColor);
+export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joystickCamRef }: LocalAvatarProps) {
   const name = usePlayerStore((s) => s.name);
+  const modelKey = usePlayerStore((s) => s.modelKey);
+  const modelDef = getModel(modelKey);
   const groupRef = useRef<THREE.Group>(null);
   const { camera, gl } = useThree();
 
-  const { scene, animations } = useGLTF(MODEL_URL);
+  const { scene, animations } = useGLTF(modelDef.url);
   const clone = useMemo(() => cloneSkeleton(scene) as THREE.Group, [scene]);
-
-  // useAnimations must target the groupRef that wraps the primitive
   const { actions } = useAnimations(animations, groupRef);
 
   const keys = useRef<Record<string, boolean>>({});
   const orbitRef = useRef({ theta: Math.PI, phi: 0.3 });
   const isDragging = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
-  const currentAction = useRef<string>('Idle');
+  const currentAction = useRef<string>('');
 
-  // Tint avatar color
-  useEffect(() => {
-    clone.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-        mats.forEach((mat) => {
-          const m = mat as THREE.MeshStandardMaterial;
-          if (m.color) m.color.set(avatarColor);
-        });
-      }
-    });
-  }, [avatarColor, clone]);
+  const resolveAnim = (preferred: string, fallbackIndex: number): string | null => {
+    if (preferred && actions[preferred]) return preferred;
+    const k = Object.keys(actions);
+    return k[fallbackIndex] ?? k[0] ?? null;
+  };
 
-  // Start idle animation
   useEffect(() => {
-    if (actions['Idle']) {
-      actions['Idle'].reset().play();
-      currentAction.current = 'Idle';
+    const idleName = resolveAnim(modelDef.idleAnim, 0);
+    if (idleName && actions[idleName]) {
+      actions[idleName]!.reset().play();
+      currentAction.current = idleName;
     }
-  }, [actions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actions, modelDef.key]);
 
-  // Keyboard listeners
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = true; };
     const onUp = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = false; };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
-    return () => {
-      window.removeEventListener('keydown', onDown);
-      window.removeEventListener('keyup', onUp);
-    };
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
   }, []);
 
-  // Mouse orbit
   useEffect(() => {
     const dom = gl.domElement;
     const onPointerDown = (e: PointerEvent) => {
@@ -111,9 +91,7 @@ export default function LocalAvatar({
     if (!groupRef.current) return;
     const group = groupRef.current;
 
-    let moveX = 0;
-    let moveZ = 0;
-
+    let moveX = 0; let moveZ = 0;
     if (!chatFocusRef.current) {
       const k = keys.current;
       if (k['w'] || k['arrowup']) moveZ -= 1;
@@ -121,7 +99,6 @@ export default function LocalAvatar({
       if (k['a'] || k['arrowleft']) moveX -= 1;
       if (k['d'] || k['arrowright']) moveX += 1;
     }
-
     moveX += joystickRef.current.x;
     moveZ -= joystickRef.current.y;
 
@@ -139,25 +116,24 @@ export default function LocalAvatar({
     if (isMoving) {
       const normX = moveX / Math.max(len, 1);
       const normZ = moveZ / Math.max(len, 1);
-      const velocity = MOVE_SPEED * delta;
-      group.position.x += (camRight.x * normX + camForward.x * normZ) * velocity;
-      group.position.z += (camRight.z * normX + camForward.z * normZ) * velocity;
-
+      group.position.x += (camRight.x * normX + camForward.x * normZ) * MOVE_SPEED * delta;
+      group.position.z += (camRight.z * normX + camForward.z * normZ) * MOVE_SPEED * delta;
       const moveDir = new THREE.Vector3(
         camRight.x * normX + camForward.x * normZ, 0,
         camRight.z * normX + camForward.z * normZ
       ).normalize();
-      const targetQuat = new THREE.Quaternion().setFromRotationMatrix(
-        new THREE.Matrix4().lookAt(new THREE.Vector3(), moveDir, new THREE.Vector3(0, 1, 0))
+      group.quaternion.slerp(
+        new THREE.Quaternion().setFromRotationMatrix(
+          new THREE.Matrix4().lookAt(new THREE.Vector3(), moveDir, new THREE.Vector3(0, 1, 0))
+        ), 0.15
       );
-      group.quaternion.slerp(targetQuat, 0.15);
     }
-
     group.position.y = Math.max(0, group.position.y);
 
-    // Switch animation
-    const nextAction = isMoving ? 'Walking' : 'Idle';
-    if (nextAction !== currentAction.current && actions[nextAction]) {
+    const walkName = resolveAnim(modelDef.walkAnim, 1);
+    const idleName = resolveAnim(modelDef.idleAnim, 0);
+    const nextAction = isMoving ? walkName : idleName;
+    if (nextAction && nextAction !== currentAction.current && actions[nextAction]) {
       actions[currentAction.current]?.fadeOut(0.2);
       actions[nextAction]!.reset().fadeIn(0.2).play();
       currentAction.current = nextAction;
@@ -167,20 +143,20 @@ export default function LocalAvatar({
     localRotRef.current = [group.quaternion.x, group.quaternion.y, group.quaternion.z, group.quaternion.w];
 
     const { theta, phi } = orbitRef.current;
-    const camX = group.position.x + CAM_BEHIND * Math.sin(theta) * Math.cos(phi);
-    const camY = group.position.y + CAM_ABOVE + CAM_BEHIND * Math.sin(phi);
-    const camZ = group.position.z + CAM_BEHIND * Math.cos(theta) * Math.cos(phi);
-    camera.position.set(camX, camY, camZ);
-    camera.lookAt(group.position.x, group.position.y + AVATAR_SCALE * 0.8, group.position.z);
+    camera.position.set(
+      group.position.x + CAM_BEHIND * Math.sin(theta) * Math.cos(phi),
+      group.position.y + CAM_ABOVE + CAM_BEHIND * Math.sin(phi),
+      group.position.z + CAM_BEHIND * Math.cos(theta) * Math.cos(phi),
+    );
+    camera.lookAt(group.position.x, group.position.y + modelDef.scale * 0.8, group.position.z);
   });
 
   return (
     <group ref={groupRef}>
-      <primitive object={clone} scale={AVATAR_SCALE} />
-      <Html center distanceFactor={0.15} position={[0, AVATAR_SCALE * 2.2, 0]} style={{ pointerEvents: 'none' }} zIndexRange={[0, 0]}>
+      <primitive object={clone} scale={modelDef.scale} rotation={[0, modelDef.rotationY, 0]} />
+      <Html center distanceFactor={0.15} position={[0, modelDef.scale * 2.2, 0]} style={{ pointerEvents: 'none' }} zIndexRange={[0, 0]}>
         <div className={styles.nametag}>{name}</div>
       </Html>
     </group>
   );
 }
-
