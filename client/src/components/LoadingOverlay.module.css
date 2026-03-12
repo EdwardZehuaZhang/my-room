@@ -1,0 +1,65 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  animation-name: fadeOut;
+  animation-duration: 0.6s;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+  animation-play-state: paused;
+}
+
+.overlay[data-done] {
+  animation-play-state: running;
+  pointer-events: none;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.track {
+  width: 240px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: var(--lime);
+  box-shadow: 0 0 12px var(--lime);
+  border-radius: 1px;
+  transition: width 0.2s ease;
+}
+
+.pct {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}

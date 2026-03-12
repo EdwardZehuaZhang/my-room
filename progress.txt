@@ -7,6 +7,8 @@
 - No external UI libraries — plain CSS modules only
 - Zustand store at client/src/store.ts — usePlayerStore for player state
 - Components live in client/src/components/ with co-located CSS modules
+- Splat renderer: @lumaai/luma-web LumaSplatsThree — has onProgress/onLoad callbacks, is a Three.js Mesh (use <primitive>)
+- App.tsx owns Canvas + Suspense boundary for the 3D scene; loading state managed via useState
 
 ## 2026-03-12 - US-007
 - What was implemented: Full project scaffolding with client (Vite+React+TS) and server (Node+Express+Socket.IO+TS)
@@ -39,4 +41,20 @@
   - Components go in client/src/components/ directory
   - CSS custom properties (--av-color) work with React inline styles via `as React.CSSProperties` cast
   - App.tsx uses usePlayerStore `joined` flag to switch between entry screen and 3D scene
+---
+
+## 2026-03-12 - US-002
+- What was implemented: Splat scene loading with @lumaai/luma-web, loading overlay with progress bar, env var handling
+- Files changed:
+  - client/src/components/SplatScene.tsx — LumaSplatsThree renderer with onProgress/onLoad, camera setup (0,2,4)
+  - client/src/components/LoadingOverlay.tsx — Progress overlay with percentage, track bar, fade-out via data-done attribute
+  - client/src/components/LoadingOverlay.module.css — Dark void bg, lime progress bar with glow, mono font, CSS fadeOut animation
+  - client/src/App.tsx — Canvas + Suspense wrapper, MissingUrl fallback, progress/loaded state management
+  - client/package.json — Added @lumaai/luma-web dependency
+- **Learnings for future iterations:**
+  - LumaSplatsThree is a Three.js Mesh — render via `<primitive object={instance} />` in R3F
+  - onProgress returns `{ progress: number }` where progress is 0-1 (multiply by 100 for %)
+  - Loading overlay uses CSS animation-play-state trick: paused by default, running when data-done attribute present
+  - Canvas lives in App.tsx with Suspense fallback={null} — splat loads async without blocking
+  - VITE_SPLAT_URL read via import.meta.env — shows lime mono message if undefined
 ---
