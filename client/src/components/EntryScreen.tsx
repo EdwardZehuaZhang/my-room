@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePlayerStore } from '../store.ts';
 import { AVATAR_MODELS } from '../models.ts';
+import ModelPreview from './ModelPreview.tsx';
 import styles from './EntryScreen.module.css';
 
 export default function EntryScreen() {
@@ -16,7 +17,7 @@ export default function EntryScreen() {
 
   return (
     <div className={styles.backdrop}>
-      <div className={styles.card}>
+      <div className={styles.card} style={{ maxWidth: '520px' }}>
         <span className={styles.eyebrow}>{'// enter the room'}</span>
         <h1 className={styles.title}>my-room</h1>
         <p className={styles.subtitle}>A shared space. Up to 100 visitors at once.</p>
@@ -31,25 +32,25 @@ export default function EntryScreen() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+            autoFocus
           />
         </div>
 
         <div>
           <span className={styles.avatarLabel}>Choose avatar</span>
-          <div className={styles.avatarRow}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '10px',
+            marginTop: '8px',
+          }}>
             {AVATAR_MODELS.map((model) => (
-              <div key={model.key}>
-                <button
-                  type="button"
-                  className={`${styles.capsule} ${selectedModel === model.key ? styles.capsuleSelected : ''}`}
-                  onClick={() => setSelectedModel(model.key)}
-                  aria-label={model.name}
-                  title={model.name}
-                >
-                  {selectedModel === model.key && <span className={styles.check}>&#10003;</span>}
-                </button>
-                <span className={styles.capsuleName}>{model.name}</span>
-              </div>
+              <ModelPreview
+                key={model.key}
+                modelDef={model}
+                selected={selectedModel === model.key}
+                onClick={() => setSelectedModel(model.key)}
+              />
             ))}
           </div>
         </div>
