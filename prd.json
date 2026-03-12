@@ -1,0 +1,162 @@
+{
+  "project": "my-room",
+  "branchName": "ralph/my-room",
+  "description": "Browser-based multiplayer Gaussian splat virtual space with up to 100 anonymous users, third-person capsule avatars, and global text chat",
+  "userStories": [
+    {
+      "id": "US-007",
+      "title": "Project Scaffolding & Deployment Configuration",
+      "description": "As a developer, I want the project scaffolded with correct structure, configs, and deployment files so that all subsequent stories have a working foundation.",
+      "acceptanceCriteria": [
+        "Project structure matches spec: my-room/client/ (Vite+React+TS) and my-room/server/ (Node+Express+Socket.IO+TS)",
+        "client/vite.config.ts configured correctly; client/tsconfig.json has strict: true",
+        "server/tsconfig.json has strict: true; server compiles to server/dist/",
+        "server/src/index.ts exposes GET /health returning 200 OK with Express + Socket.IO scaffolded",
+        "vercel.json at root with buildCommand 'cd client && npm install && npm run build', outputDirectory 'client/dist', framework null",
+        "railway.toml at root with nixpacks builder, buildCommand 'cd server && npm install && npm run build', startCommand 'node server/dist/index.js', healthcheckPath '/health'",
+        "client/.env.example with VITE_SPLAT_URL and VITE_SERVER_URL; server/.env.example with PORT and MAX_USERS",
+        "README.md includes prerequisites (Node 18+), local dev instructions (two terminals), environment variables table, deploy steps for Vercel and Railway",
+        "globals.css created with full design system: --bg-void #080810, --bg-glass, --lime #B4FF50, --font-ui Syne, --font-mono IBM Plex Mono, all CSS variables from spec",
+        "index.html includes Google Fonts preconnect and link tags for Syne and IBM Plex Mono",
+        "No external UI libraries installed (plain CSS modules only); dependencies: react, react-dom, @react-three/fiber, @react-three/drei, socket.io-client, zustand in client; express, socket.io in server",
+        "viewport meta tag present in index.html",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Pure Vite SPA — do NOT use Next.js or any SSR framework. TypeScript strict mode everywhere with no 'any' escapes unless a third-party library forces it (add comment explaining why). Use CSS modules for component styles. Design aesthetic: dark void base (#080810), frosted glass panels (rgba(12,12,20,0.72) + blur(18px) saturate(160%)), electric lime accent (#B4FF50), IBM Plex Mono for data, Syne for headings."
+    },
+    {
+      "id": "US-001",
+      "title": "Entry Screen",
+      "description": "As a visitor, I want to enter my name and pick an avatar color so that I can join the shared space with an identity.",
+      "acceptanceCriteria": [
+        "EntryScreen.tsx renders a full-screen centered column over an animated radial gradient background (slow drift, 20s ease-in-out infinite alternate)",
+        "Card uses frosted glass: var(--bg-glass) background, backdrop-filter: var(--blur), 1px solid var(--border), border-radius 20px",
+        "Eyebrow text '// enter the room' in mono font, lime color, uppercase",
+        "Title 'my-room' in Syne 700, clamp(2.2rem, 8vw, 3.2rem)",
+        "Subtitle 'A shared space. Up to 100 visitors at once.' in muted text",
+        "Text input: label 'Your name', max 20 characters, placeholder 'Enter name…', bg-input background, border-focus on focus",
+        "Avatar picker: 4 capsule buttons in colors #FF6B6B, #4ECDC4, #45B7D1, #96CEB4 with labels Coral/Teal/Sky/Sage",
+        "Capsules have CSS idle bob animation (translateY sine wave, ~1.1s loop, -6px peak)",
+        "Selected avatar shows colored border + box-shadow glow + checkmark badge top-right",
+        "Join button ('Enter space →') uses var(--lime) bg, #0A0A0F text, disabled at opacity 0.28 until name non-empty AND avatar selected",
+        "On Join: store { name, avatarColor } in Zustand store or React context; unmount entry screen and mount 3D scene",
+        "Mobile-responsive: card stacks vertically, padding adjusts at max-width 480px",
+        "No authentication, no persistence — session only",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Use CSS modules (EntryScreen.module.css). Follow the exact component code and CSS from the UI/UX spec. The card should feel like a HUD overlay — frosted glass over the dark void. Avatar buttons use CSS custom property --av-color for dynamic styling. No external UI libraries."
+    },
+    {
+      "id": "US-002",
+      "title": "Splat Scene Loading",
+      "description": "As a visitor, I want the Gaussian splat environment to load with a progress indicator so I know when the space is ready to explore.",
+      "acceptanceCriteria": [
+        "Splat URL read from import.meta.env.VITE_SPLAT_URL — never hardcoded",
+        "If VITE_SPLAT_URL is undefined, show centered mono-font message in lime: '// VITE_SPLAT_URL is not defined' — do not crash",
+        "LoadingOverlay shows during load: 'Scanning room…' label in mono uppercase muted text, thin 240px track with lime bar + glow, large percentage number",
+        "Progress bar updates with actual load percentage; overlay fades out via CSS animation (0.6s ease) triggered by data-done attribute when load completes",
+        "Splat renderer uses <Suspense> or equivalent async boundary — never blocks main thread",
+        "Document splat library choice in a comment at top of SplatScene.tsx (pick one of luma-react or antimatter15/splat)",
+        "Camera initial position: above and behind room center (not inside geometry), approximately 4 units behind and 2 units above origin",
+        "Scene renders on desktop Chrome/Firefox and mobile iOS Safari/Android Chrome",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Pick exactly ONE splat renderer library — do not mix. Loading overlay design: dark void background, centered column with mono label, 2px track bar with lime glow, and 2.5rem percentage readout. The overlay should feel like a control room boot sequence. Use data-done attribute to trigger CSS fadeOut animation-play-state."
+    },
+    {
+      "id": "US-004",
+      "title": "Socket.IO Server & Multiplayer Sync",
+      "description": "As a visitor, I want to see other players in real-time so the space feels shared and alive.",
+      "acceptanceCriteria": [
+        "Server accepts connections up to MAX_USERS (default 100) simultaneous sockets; emits 'server_full' then disconnects excess connections",
+        "On connect: assign UUID; broadcast 'player_joined' to all others with { id, name, avatarColor, position, rotation }",
+        "On 'player_move' from client: rebroadcast 'player_moved' to all others (NOT sender) with { id, position, rotation }",
+        "On disconnect: broadcast 'player_left' with { id }; remove from server state Map<socketId, PlayerState>",
+        "Server stores only in-memory Map — no database, no disk writes",
+        "Server accepts client updates at 10 Hz; may throttle excess",
+        "Client useSocket.ts hook: connects to VITE_SERVER_URL, emits 'player_join' on mount with { name, avatarColor }",
+        "Client emits 'player_move' at 10 Hz (setInterval 100ms) with { position: [x,y,z], rotation: [x,y,z,w] }",
+        "Client applies lerp (factor ~0.15 per frame at 60fps) on remote avatar positions to smooth jitter",
+        "On 'player_joined': spawn remote avatar capsule; on 'player_left': remove immediately",
+        "On 'server_full': show modal reusing glass card aesthetic with red-tinted border (#FF6B6B), message 'Server is full (100/100). Try again later.', return to entry screen",
+        "Client handles reconnect: on socket reconnect event, re-emit 'player_join' with stored name/color",
+        "No authentication tokens — socket ID is the only identity",
+        "No WebRTC or peer-to-peer — all traffic routes through Socket.IO server",
+        "Socket events never emitted from within React render — only from useEffect or event handlers",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "10Hz network cap is a HARD ceiling — implement with setInterval(100) and skip emit if previous interval hasn't cleared. Server full modal reuses the .card container from entry screen with same glass aesthetic but red-tinted border. No authentication, no sessions, no persistence. PORT from env, default 3001."
+    },
+    {
+      "id": "US-003",
+      "title": "Third-Person Avatar Movement",
+      "description": "As a visitor, I want to move my capsule avatar around the space with smooth third-person camera controls on both desktop and mobile.",
+      "acceptanceCriteria": [
+        "Avatar renders as a colored capsule (matching selected avatarColor) in the 3D scene",
+        "Desktop: WASD for movement; mouse drag (left button) to orbit camera around avatar; avatar faces movement direction",
+        "Mobile: nipplejs left joystick for movement, right joystick for camera orbit; joysticks render as translucent overlays in bottom-left/bottom-right corners",
+        "nipplejs dynamically imported (it accesses window — SSR-safe import), not imported at module level",
+        "Idle animation: gentle pulse/bob when stationary (procedural, not GLTF skeleton)",
+        "Walk animation: faster bob + slight lean when moving (procedural)",
+        "Movement speed ~5 units/sec; camera follows ~4 units behind, ~2 units above avatar",
+        "Avatar Y position clamped to never fall below y=0 (no physics engine — simple Y-clamp)",
+        "Movement delta applied in useFrame animation loop, NOT in event handlers",
+        "WASD keys fully suppressed when chat input is focused (integration with US-006 onFocusChange)",
+        "touch-action: none and user-select: none on R3F canvas wrapper to prevent zoom/select on mobile",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Do NOT use @react-three/rapier or any physics engine. Procedural animations only via Three.js transforms in useFrame. Movement uses a ref to check chat focus state — when chat is focused, skip all WASD processing. nipplejs zones should use touch-action: none. Mobile joystick styling should be translucent to match the HUD overlay aesthetic."
+    },
+    {
+      "id": "US-005",
+      "title": "Billboard Nametags",
+      "description": "As a visitor, I want to see other players' names floating above their avatars so I can identify who's who.",
+      "acceptanceCriteria": [
+        "Nametag renders via drei <Html> component positioned ~1.5 units above avatar center",
+        "Text: player name in IBM Plex Mono 11px weight 500, #EDEAE0 color",
+        "Background: pill shape (border-radius 999px), rgba(8,8,16,0.75) with backdrop-filter blur(8px), 1px border rgba(255,255,255,0.1)",
+        "Billboard constraint: tag always faces active camera using drei <Billboard> or <Html center>",
+        "Distance fade: opacity lerps from 1.0 at ≤10 units to 0.0 at ≥20 units from local player",
+        "Local player's own avatar does NOT show a nametag",
+        "Nametag derives from live player state (updates immediately if state changes)",
+        "Nametag does not occlude splat — use depthTest: false or pointerEvents: none on Html",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Use drei's <Html center distanceFactor={8}> for simplicity — avoid manual quaternion math. Style follows spec exactly: mono font, dark glass pill, 0.04em letter-spacing, whiteSpace nowrap. Opacity transition 0.3s for smooth distance fade."
+    },
+    {
+      "id": "US-006",
+      "title": "Global Text Chat",
+      "description": "As a visitor, I want to send and receive text messages so I can communicate with others in the space.",
+      "acceptanceCriteria": [
+        "ChatPanel anchored bottom-right, ~320px wide, max-height 420px, frosted glass background with border-radius 18px",
+        "Collapsible via toggle button: collapsed state is 44px circle with pointer-events: none on panel (canvas stays interactive), toggle button retains pointer-events",
+        "Message list: scrollable, max 200 messages client-side (oldest evicted), auto-scrolls to newest with smooth behavior",
+        "Messages show [name] in lime color followed by text in mono font 0.78rem",
+        "System messages (join/leave) rendered in muted italic: '[name] joined' / '[name] left'",
+        "Input: single-line, max 280 chars, send on Enter or Send button (↑ arrow, lime background)",
+        "WASD suppression: onKeyDown calls e.stopPropagation(); onFocusChange callback sets ref that useFrame checks",
+        "Client emits 'chat_message { text }'; server rebroadcasts 'chat_broadcast { id, name, text, timestamp }' to all sockets",
+        "Server enforces max 280 chars (truncate silently)",
+        "Chat history is ephemeral — server does NOT persist; new joiners see only post-connect messages",
+        "Mobile: panel goes full-width at bottom with border-radius 16px 16px 0 0, max-height 50vh at max-width 600px",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Follow ChatPanel.tsx and ChatPanel.module.css from UI spec exactly. The chat should feel like a translucent HUD overlay — frosted glass, mono font for messages, lime accent for names and send button. Collapsed state must not steal pointer events from 3D canvas. No profanity filter required. No chat persistence on server."
+    }
+  ]
+}

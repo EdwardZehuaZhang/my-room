@@ -1,0 +1,53 @@
+/* ── Design System ── */
+:root {
+  /* Backgrounds */
+  --bg-void: #080810;
+  --bg-glass: rgba(12, 12, 20, 0.72);
+  --bg-input: rgba(255, 255, 255, 0.05);
+
+  /* Accents */
+  --lime: #B4FF50;
+  --lime-dim: rgba(180, 255, 80, 0.18);
+
+  /* Text */
+  --text-primary: #EDEAE0;
+  --text-muted: rgba(237, 234, 224, 0.55);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(180, 255, 80, 0.45);
+
+  /* Effects */
+  --blur: blur(18px) saturate(160%);
+
+  /* Typography */
+  --font-ui: 'Syne', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Spacing */
+  --radius-card: 20px;
+  --radius-input: 12px;
+  --radius-btn: 14px;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
