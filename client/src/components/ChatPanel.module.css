@@ -13,16 +13,9 @@
   border-radius: 18px;
   z-index: 100;
   overflow: hidden;
-  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.collapsed {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(10px);
-}
-
-.toggle {
+.openBtn {
   position: fixed;
   bottom: 1rem;
   right: 1rem;
@@ -36,19 +29,19 @@
   color: var(--text-primary);
   font-size: 1.2rem;
   cursor: pointer;
-  z-index: 101;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
 }
 
-.toggle:hover {
+.openBtn:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
 .header {
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.75rem 0.6rem 1rem;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.08em;
@@ -56,6 +49,27 @@
   color: var(--lime);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.closeBtn:hover {
+  color: var(--text-primary);
 }
 
 .messages {
@@ -68,18 +82,9 @@
   min-height: 0;
 }
 
-.messages::-webkit-scrollbar {
-  width: 4px;
-}
-
-.messages::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.messages::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 2px;
-}
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 
 .message {
   font-family: var(--font-mono);
@@ -124,13 +129,8 @@
   transition: border-color 0.2s;
 }
 
-.input::placeholder {
-  color: var(--text-muted);
-}
-
-.input:focus {
-  border-color: var(--border-focus);
-}
+.input::placeholder { color: var(--text-muted); }
+.input:focus { border-color: var(--border-focus); }
 
 .sendBtn {
   width: 34px;
@@ -153,7 +153,6 @@
   cursor: default;
 }
 
-/* Mobile responsive */
 @media (max-width: 600px) {
   .panel {
     left: 0;
@@ -164,7 +163,7 @@
     border-radius: 16px 16px 0 0;
   }
 
-  .toggle {
+  .openBtn {
     bottom: 0.5rem;
     right: 0.5rem;
   }

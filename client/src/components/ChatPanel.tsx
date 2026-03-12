@@ -10,18 +10,12 @@ export default function ChatPanel() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to newest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleFocus = useCallback(() => {
-    chatFocusRef.current = true;
-  }, []);
-
-  const handleBlur = useCallback(() => {
-    chatFocusRef.current = false;
-  }, []);
+  const handleFocus = useCallback(() => { chatFocusRef.current = true; }, []);
+  const handleBlur = useCallback(() => { chatFocusRef.current = false; }, []);
 
   const sendMessage = useCallback(() => {
     const trimmed = text.trim();
@@ -32,67 +26,72 @@ export default function ChatPanel() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      // Suppress WASD and other keys from reaching the 3D scene
       e.stopPropagation();
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
+      if (e.key === 'Enter') sendMessage();
     },
     [sendMessage],
   );
 
-  return (
-    <>
+  if (!open) {
+    return (
       <button
-        className={styles.toggle}
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? 'Close chat' : 'Open chat'}
+        className={styles.openBtn}
+        onClick={() => setOpen(true)}
+        aria-label="Open chat"
       >
-        {open ? '\u00D7' : '\u2026'}
+        &#8230;
       </button>
+    );
+  }
 
-      <div className={`${styles.panel} ${open ? '' : styles.collapsed}`}>
-        <div className={styles.header}>// chat</div>
-
-        <div className={styles.messages}>
-          {messages.map((msg) =>
-            msg.system ? (
-              <div key={msg.id} className={styles.systemMessage}>
-                {msg.text}
-              </div>
-            ) : (
-              <div key={msg.id} className={styles.message}>
-                <span className={styles.messageName}>[{msg.name}]</span>{' '}
-                {msg.text}
-              </div>
-            ),
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        <div className={styles.inputRow}>
-          <input
-            ref={inputRef}
-            className={styles.input}
-            type="text"
-            maxLength={280}
-            placeholder="Type a message…"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-          />
-          <button
-            className={styles.sendBtn}
-            onClick={sendMessage}
-            disabled={!text.trim()}
-            aria-label="Send message"
-          >
-            ↑
-          </button>
-        </div>
+  return (
+    <div className={styles.panel}>
+      <div className={styles.header}>
+        <span>// chat</span>
+        <button
+          className={styles.closeBtn}
+          onClick={() => setOpen(false)}
+          aria-label="Close chat"
+        >
+          &#215;
+        </button>
       </div>
-    </>
+
+      <div className={styles.messages}>
+        {messages.map((msg) =>
+          msg.system ? (
+            <div key={msg.id} className={styles.systemMessage}>{msg.text}</div>
+          ) : (
+            <div key={msg.id} className={styles.message}>
+              <span className={styles.messageName}>[{msg.name}]</span>{' '}{msg.text}
+            </div>
+          ),
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className={styles.inputRow}>
+        <input
+          ref={inputRef}
+          className={styles.input}
+          type="text"
+          maxLength={280}
+          placeholder="Type a message..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          className={styles.sendBtn}
+          onClick={sendMessage}
+          disabled={!text.trim()}
+          aria-label="Send message"
+        >
+          &#9658;
+        </button>
+      </div>
+    </div>
   );
 }
