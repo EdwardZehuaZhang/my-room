@@ -18,7 +18,7 @@ export const AVATAR_MODELS: ModelDef[] = [
     url: `${BASE}RobotExpressive/RobotExpressive.glb`,
     idleAnim: 'Idle',
     walkAnim: 'Walking',
-    heightHint: 1.7,
+    heightHint: 3.5,
     rotationY: Math.PI,
   },
   {
@@ -27,7 +27,7 @@ export const AVATAR_MODELS: ModelDef[] = [
     url: `${BASE}Soldier.glb`,
     idleAnim: 'Idle',
     walkAnim: 'Walk',
-    heightHint: 170,
+    heightHint: 1.5,
     rotationY: Math.PI,
   },
   {
@@ -36,7 +36,7 @@ export const AVATAR_MODELS: ModelDef[] = [
     url: `${BASE}Michelle.glb`,
     idleAnim: '',
     walkAnim: '',
-    heightHint: 170,
+    heightHint: 1.5,
     rotationY: Math.PI,
   },
   {
@@ -45,7 +45,7 @@ export const AVATAR_MODELS: ModelDef[] = [
     url: `${BASE}Xbot.glb`,
     idleAnim: '',
     walkAnim: '',
-    heightHint: 170,
+    heightHint: 1.5,
     rotationY: Math.PI,
   },
 ];
