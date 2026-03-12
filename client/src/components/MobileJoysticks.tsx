@@ -1,4 +1,5 @@
-import { useEffect, useRef, MutableRefObject } from 'react';
+import { useEffect, useRef } from 'react';
+import type { MutableRefObject } from 'react';
 import styles from './MobileJoysticks.module.css';
 
 interface MobileJoysticksProps {
@@ -18,7 +19,7 @@ export default function MobileJoysticks({ joystickRef, joystickCamRef }: MobileJ
     let cleanup: (() => void) | undefined;
 
     (async () => {
-      // Dynamic import â€” nipplejs accesses window at module level
+      // Dynamic import â€?nipplejs accesses window at module level
       const nipplejs = await import('nipplejs');
 
       if (!leftRef.current || !rightRef.current) return;
