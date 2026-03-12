@@ -1,16 +1,17 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import type { MutableRefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Html, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
+import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import { usePlayerStore } from '../store.ts';
 import styles from './Nametag.module.css';
 import { chatFocusRef } from '../store.ts';
 
 const MOVE_SPEED = 0.05;
-const CAM_BEHIND = 0.04;
-const CAM_ABOVE = 0.02;
-const AVATAR_SCALE = 0.003;
+const CAM_BEHIND = 0.12;
+const CAM_ABOVE = 0.06;
+const AVATAR_SCALE = 0.006;
 const MODEL_URL = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb';
 
 useGLTF.preload(MODEL_URL);
@@ -34,33 +35,37 @@ export default function LocalAvatar({
   const { camera, gl } = useThree();
 
   const { scene, animations } = useGLTF(MODEL_URL);
-  const clone = useRef<THREE.Group>(scene.clone(true));
-  const { actions } = useAnimations(animations, clone);
+  const clone = useMemo(() => cloneSkeleton(scene) as THREE.Group, [scene]);
+
+  // useAnimations must target the groupRef that wraps the primitive
+  const { actions } = useAnimations(animations, groupRef);
 
   const keys = useRef<Record<string, boolean>>({});
-  const orbitRef = useRef({ theta: Math.PI, phi: 0.4 });
+  const orbitRef = useRef({ theta: Math.PI, phi: 0.3 });
   const isDragging = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
   const currentAction = useRef<string>('Idle');
 
   // Tint avatar color
   useEffect(() => {
-    clone.current.traverse((child) => {
+    clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         mats.forEach((mat) => {
-          if ((mat as THREE.MeshStandardMaterial).color) {
-            (mat as THREE.MeshStandardMaterial).color.set(avatarColor);
-          }
+          const m = mat as THREE.MeshStandardMaterial;
+          if (m.color) m.color.set(avatarColor);
         });
       }
     });
-  }, [avatarColor]);
+  }, [avatarColor, clone]);
 
   // Start idle animation
   useEffect(() => {
-    actions['Idle']?.play();
+    if (actions['Idle']) {
+      actions['Idle'].reset().play();
+      currentAction.current = 'Idle';
+    }
   }, [actions]);
 
   // Keyboard listeners
@@ -87,7 +92,7 @@ export default function LocalAvatar({
       const dy = e.clientY - lastMouse.current.y;
       lastMouse.current = { x: e.clientX, y: e.clientY };
       orbitRef.current.theta -= dx * 0.005;
-      orbitRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + dy * 0.005));
+      orbitRef.current.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + dy * 0.005));
     };
     const onPointerUp = () => { isDragging.current = false; };
     dom.addEventListener('pointerdown', onPointerDown);
@@ -122,7 +127,7 @@ export default function LocalAvatar({
 
     if (Math.abs(joystickCamRef.current.x) > 0.05 || Math.abs(joystickCamRef.current.y) > 0.05) {
       orbitRef.current.theta -= joystickCamRef.current.x * 2.5 * delta;
-      orbitRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + joystickCamRef.current.y * 2.5 * delta));
+      orbitRef.current.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + joystickCamRef.current.y * 2.5 * delta));
     }
 
     const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
@@ -138,8 +143,13 @@ export default function LocalAvatar({
       group.position.x += (camRight.x * normX + camForward.x * normZ) * velocity;
       group.position.z += (camRight.z * normX + camForward.z * normZ) * velocity;
 
-      const moveDir = new THREE.Vector3(camRight.x * normX + camForward.x * normZ, 0, camRight.z * normX + camForward.z * normZ).normalize();
-      const targetQuat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(new THREE.Vector3(), moveDir, new THREE.Vector3(0, 1, 0)));
+      const moveDir = new THREE.Vector3(
+        camRight.x * normX + camForward.x * normZ, 0,
+        camRight.z * normX + camForward.z * normZ
+      ).normalize();
+      const targetQuat = new THREE.Quaternion().setFromRotationMatrix(
+        new THREE.Matrix4().lookAt(new THREE.Vector3(), moveDir, new THREE.Vector3(0, 1, 0))
+      );
       group.quaternion.slerp(targetQuat, 0.15);
     }
 
@@ -147,11 +157,9 @@ export default function LocalAvatar({
 
     // Switch animation
     const nextAction = isMoving ? 'Walking' : 'Idle';
-    if (nextAction !== currentAction.current) {
-      const prev = actions[currentAction.current];
-      const next = actions[nextAction];
-      prev?.fadeOut(0.2);
-      next?.reset().fadeIn(0.2).play();
+    if (nextAction !== currentAction.current && actions[nextAction]) {
+      actions[currentAction.current]?.fadeOut(0.2);
+      actions[nextAction]!.reset().fadeIn(0.2).play();
       currentAction.current = nextAction;
     }
 
@@ -163,15 +171,16 @@ export default function LocalAvatar({
     const camY = group.position.y + CAM_ABOVE + CAM_BEHIND * Math.sin(phi);
     const camZ = group.position.z + CAM_BEHIND * Math.cos(theta) * Math.cos(phi);
     camera.position.set(camX, camY, camZ);
-    camera.lookAt(group.position.x, group.position.y + 0.5 * AVATAR_SCALE, group.position.z);
+    camera.lookAt(group.position.x, group.position.y + AVATAR_SCALE * 0.8, group.position.z);
   });
 
   return (
     <group ref={groupRef}>
-      <primitive object={clone.current} scale={AVATAR_SCALE} />
-      <Html center distanceFactor={0.08} position={[0, 0.015, 0]} style={{ pointerEvents: 'none' }} zIndexRange={[0, 0]}>
+      <primitive object={clone} scale={AVATAR_SCALE} />
+      <Html center distanceFactor={0.15} position={[0, AVATAR_SCALE * 2.2, 0]} style={{ pointerEvents: 'none' }} zIndexRange={[0, 0]}>
         <div className={styles.nametag}>{name}</div>
       </Html>
     </group>
   );
 }
+

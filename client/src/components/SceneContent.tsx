@@ -1,4 +1,4 @@
-import { MutableRefObject } from 'react';
+import type { MutableRefObject } from 'react';
 import SplatScene from './SplatScene.tsx';
 import RemoteAvatars from './RemoteAvatars.tsx';
 import LocalAvatar from './LocalAvatar.tsx';
