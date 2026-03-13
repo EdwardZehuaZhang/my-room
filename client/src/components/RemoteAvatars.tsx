@@ -7,7 +7,7 @@ import { useRemotePlayersStore } from '../store.ts';
 import type { RemotePlayer } from '../store.ts';
 import { getModel } from '../models.ts';
 
-const TARGET_HEIGHT = 0.012;
+const TARGET_HEIGHT = 1.5;
 const LERP_FACTOR = 0.15;
 const FADE_NEAR = 0.3;
 const FADE_FAR = 0.6;
@@ -95,6 +95,7 @@ export default function RemoteAvatars() {
     <>{Array.from(players.values()).map((player) => <RemoteAvatar key={player.id} player={player} />)}</>
   );
 }
+
 
 
 

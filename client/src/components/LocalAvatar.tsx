@@ -8,10 +8,10 @@ import { usePlayerStore, chatFocusRef } from '../store.ts';
 import { getModel } from '../models.ts';
 
 // All avatars will be normalized to this world-unit height
-const TARGET_HEIGHT = 0.012;
-const CAM_BEHIND = 0.12;
-const CAM_ABOVE = 0.06;
-const MOVE_SPEED = 0.05;
+const TARGET_HEIGHT = 1.5;
+const CAM_BEHIND = 4.0;
+const CAM_ABOVE = 2.2;
+const MOVE_SPEED = 2.5;
 
 // Pre-allocated reusable objects
 const _camForward = new THREE.Vector3();
@@ -174,6 +174,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     </group>
   );
 }
+
 
 
 
