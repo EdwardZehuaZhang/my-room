@@ -27,7 +27,7 @@ export default function SplatScene({ splatUrl, onProgress, onLoaded }: SplatScen
   useEffect(() => {
     const instance = new LumaSplatsThree({
       source: splatUrl,
-      enableThreeShaderIntegration: false,
+      enableThreeShaderIntegration: true,
     });
 
     instance.onProgress = (e) => {
@@ -59,5 +59,6 @@ export default function SplatScene({ splatUrl, onProgress, onLoaded }: SplatScen
     </group>
   );
 }
+
 
 
