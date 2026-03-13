@@ -5,7 +5,7 @@ import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import * as THREE from 'three';
 import type { ModelDef } from '../models.ts';
 
-const PREVIEW_TARGET_HEIGHT = 1.6;
+const PREVIEW_TARGET_HEIGHT = 1.28;
 
 function PreviewModel({ modelDef }: { modelDef: ModelDef }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -76,7 +76,7 @@ export default function ModelPreview({ modelDef, selected, onClick }: Props) {
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
       }}>
-        {selected ? 'âœ“ ' : ''}{modelDef.name}
+        {selected ? 'âœ?' : ''}{modelDef.name}
       </div>
     </div>
   );
