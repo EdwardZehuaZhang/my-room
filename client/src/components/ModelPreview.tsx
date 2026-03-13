@@ -5,7 +5,7 @@ import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import * as THREE from 'three';
 import type { ModelDef } from '../models.ts';
 
-const PREVIEW_TARGET_HEIGHT = 1.024;
+const PREVIEW_TARGET_HEIGHT = 0.819;
 
 function PreviewModel({ modelDef }: { modelDef: ModelDef }) {
   const groupRef = useRef<THREE.Group>(null);
