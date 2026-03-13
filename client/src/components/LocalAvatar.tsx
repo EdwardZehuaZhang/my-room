@@ -105,6 +105,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     let moveX = 0; let moveZ = 0;
     if (!chatFocusRef.current) {
       const k = keys.current;
+      const sprint = k['shift'];
       if (k['w'] || k['arrowup']) moveZ -= 1;
       if (k['s'] || k['arrowdown']) moveZ += 1;
       if (k['a'] || k['arrowleft']) moveX -= 1;
@@ -127,7 +128,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     if (isMoving) {
       const normX = moveX / Math.max(len, 1);
       const normZ = moveZ / Math.max(len, 1);
-      const v = MOVE_SPEED * delta;
+      const v = MOVE_SPEED * (sprint ? 5 : 1) * delta;
       group.position.x += (_camRight.x * normX + _camForward.x * normZ) * v;
       group.position.z += (_camRight.z * normX + _camForward.z * normZ) * v;
       _moveDir.set(_camRight.x * normX + _camForward.x * normZ, 0, _camRight.z * normX + _camForward.z * normZ).normalize();
@@ -174,6 +175,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     </group>
   );
 }
+
 
 
 
