@@ -103,9 +103,10 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     const group = groupRef.current;
 
     let moveX = 0; let moveZ = 0;
+    let sprint = false;
     if (!chatFocusRef.current) {
       const k = keys.current;
-      const sprint = k['shift'];
+      sprint = !!k['shift'];
       if (k['w'] || k['arrowup']) moveZ -= 1;
       if (k['s'] || k['arrowdown']) moveZ += 1;
       if (k['a'] || k['arrowleft']) moveX -= 1;
@@ -175,6 +176,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     </group>
   );
 }
+
 
 
 
