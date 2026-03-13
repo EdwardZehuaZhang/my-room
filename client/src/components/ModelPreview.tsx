@@ -58,7 +58,7 @@ export default function ModelPreview({ modelDef, selected, onClick }: Props) {
     >
       <div style={{ width: '100%', height: '120px' }}>
         <Canvas
-          camera={{ position: [0, 0, 3.11], fov: 40 }}
+          camera={{ position: [0, 0, 4.44], fov: 40 }}
           gl={{ antialias: false, alpha: true }}
           style={{ background: 'transparent' }}
         >
