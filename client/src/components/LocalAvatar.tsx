@@ -38,8 +38,6 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
 
   const { scene, animations } = useGLTF(modelDef.url);
   const clone = useMemo(() => cloneSkeleton(scene) as THREE.Group, [scene]);
-  // Prevent avatar from writing to depth buffer (avoids splat hole under avatar)
-  useMemo(() => { clone.traverse((obj) => { if ((obj as THREE.Mesh).isMesh) { const m = (obj as THREE.Mesh).material; (Array.isArray(m) ? m : [m]).forEach((mat) => { mat.depthWrite = false; }); } }); }, [clone]);
   const { actions } = useAnimations(animations, groupRef);
 
   // Normalize using known heightHint so all models match in-world

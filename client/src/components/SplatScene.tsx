@@ -27,7 +27,7 @@ export default function SplatScene({ splatUrl, onProgress, onLoaded }: SplatScen
   useEffect(() => {
     const instance = new LumaSplatsThree({
       source: splatUrl,
-      enableThreeShaderIntegration: true,
+      enableThreeShaderIntegration: false,
     });
 
     instance.onProgress = (e) => {
@@ -54,11 +54,12 @@ export default function SplatScene({ splatUrl, onProgress, onLoaded }: SplatScen
   const yOffset = parseFloat((import.meta.env.VITE_SPLAT_Y_OFFSET as string) ?? '0');
 
   return (
-    <group position={[0, yOffset, 0]}>
+    <group position={[0, yOffset, 0]} renderOrder={-1}>
       <primitive object={splat} />
     </group>
   );
 }
+
 
 
 
