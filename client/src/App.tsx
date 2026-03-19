@@ -66,7 +66,7 @@ export default function App() {
           userSelect: 'none',
         }}
         gl={{ antialias: false }}
-        camera={{ fov: 60, near: 0.1, far: 1000 }}
+        camera={{ fov: 60, near: 0.001, far: 1000 }}
       >
         <Suspense fallback={null}>
           <SceneContent

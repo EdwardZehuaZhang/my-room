@@ -7,7 +7,7 @@ import { useRemotePlayersStore } from '../store.ts';
 import type { RemotePlayer } from '../store.ts';
 import { getModel } from '../models.ts';
 
-const TARGET_HEIGHT = 1.5;
+const TARGET_HEIGHT = 0.1;
 const LERP_FACTOR = 0.15;
 const FADE_NEAR = 0.3;
 const FADE_FAR = 0.6;

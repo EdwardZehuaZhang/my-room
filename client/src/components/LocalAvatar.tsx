@@ -8,10 +8,10 @@ import { usePlayerStore, chatFocusRef } from '../store.ts';
 import { getModel } from '../models.ts';
 
 // All avatars will be normalized to this world-unit height
-const TARGET_HEIGHT = 1.5;
-const CAM_BEHIND = 4.0;
-const CAM_ABOVE = 2.2;
-const MOVE_SPEED = 2.5;
+const TARGET_HEIGHT = 0.1;
+const CAM_BEHIND = 0.5;
+const CAM_ABOVE = 0.3;
+const MOVE_SPEED = 0.17;
 
 // Pre-allocated reusable objects
 const _camForward = new THREE.Vector3();
@@ -80,7 +80,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     const onPointerMove = (e: PointerEvent) => {
       if (!isDragging.current) return;
       orbitRef.current.theta -= (e.clientX - lastMouse.current.x) * 0.005;
-      orbitRef.current.phi = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + (e.clientY - lastMouse.current.y) * 0.005));
+      orbitRef.current.phi = Math.max(-0.2, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + (e.clientY - lastMouse.current.y) * 0.005));
       lastMouse.current = { x: e.clientX, y: e.clientY };
     };
     const onPointerUp = () => { isDragging.current = false; };
@@ -107,15 +107,15 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
       sprint = !!k['shift'];
       if (k['w'] || k['arrowup']) moveZ -= 1;
       if (k['s'] || k['arrowdown']) moveZ += 1;
-      if (k['a'] || k['arrowleft']) moveX -= 1;
-      if (k['d'] || k['arrowright']) moveX += 1;
+      if (k['a'] || k['arrowleft']) moveX += 1;
+      if (k['d'] || k['arrowright']) moveX -= 1;
     }
     moveX += joystickRef.current.x;
     moveZ -= joystickRef.current.y;
 
     if (Math.abs(joystickCamRef.current.x) > 0.05 || Math.abs(joystickCamRef.current.y) > 0.05) {
       orbitRef.current.theta -= joystickCamRef.current.x * 2.5 * delta;
-      orbitRef.current.phi = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + joystickCamRef.current.y * 2.5 * delta));
+      orbitRef.current.phi = Math.max(-0.2, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + joystickCamRef.current.y * 2.5 * delta));
     }
 
     const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
