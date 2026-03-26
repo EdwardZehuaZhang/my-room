@@ -3,9 +3,9 @@ import { chatFocusRef, useChatStore } from '../store.ts';
 import { chatSocketRef } from '../hooks/useSocket.ts';
 import styles from './ChatPanel.module.css';
 
-export default function ChatPanel() {
+/** Reusable chat content (messages + input row). Used by both ChatPanel and MobileNavBar. */
+export function ChatContent({ classNames = styles }: { classNames?: typeof styles }) {
   const messages = useChatStore((s) => s.messages);
-  const [open, setOpen] = useState(true);
   const [text, setText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -32,6 +32,50 @@ export default function ChatPanel() {
     [sendMessage],
   );
 
+  return (
+    <>
+      <div className={classNames.messages}>
+        {messages.map((msg) =>
+          msg.system ? (
+            <div key={msg.id} className={classNames.systemMessage}>{msg.text}</div>
+          ) : (
+            <div key={msg.id} className={classNames.message}>
+              <span className={classNames.messageName}>[{msg.name}]</span>{' '}{msg.text}
+            </div>
+          ),
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className={classNames.inputRow}>
+        <input
+          ref={inputRef}
+          className={classNames.input}
+          type="text"
+          maxLength={280}
+          placeholder="Type a message..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          className={classNames.sendBtn}
+          onClick={sendMessage}
+          disabled={!text.trim()}
+          aria-label="Send message"
+        >
+          &#9658;
+        </button>
+      </div>
+    </>
+  );
+}
+
+export default function ChatPanel() {
+  const [open, setOpen] = useState(true);
+
   if (!open) {
     return (
       <button
@@ -56,42 +100,7 @@ export default function ChatPanel() {
           &#215;
         </button>
       </div>
-
-      <div className={styles.messages}>
-        {messages.map((msg) =>
-          msg.system ? (
-            <div key={msg.id} className={styles.systemMessage}>{msg.text}</div>
-          ) : (
-            <div key={msg.id} className={styles.message}>
-              <span className={styles.messageName}>[{msg.name}]</span>{' '}{msg.text}
-            </div>
-          ),
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <div className={styles.inputRow}>
-        <input
-          ref={inputRef}
-          className={styles.input}
-          type="text"
-          maxLength={280}
-          placeholder="Type a message..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-        />
-        <button
-          className={styles.sendBtn}
-          onClick={sendMessage}
-          disabled={!text.trim()}
-          aria-label="Send message"
-        >
-          &#9658;
-        </button>
-      </div>
+      <ChatContent />
     </div>
   );
 }

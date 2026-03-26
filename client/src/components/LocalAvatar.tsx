@@ -9,8 +9,8 @@ import { getModel } from '../models.ts';
 
 // All avatars will be normalized to this world-unit height
 const TARGET_HEIGHT = 0.1;
-const CAM_BEHIND = 0.5;
-const CAM_ABOVE = 0.3;
+const CAM_BEHIND = 0.8;
+const CAM_ABOVE = 0.35;
 const MOVE_SPEED = 0.17;
 
 // Pre-allocated reusable objects
@@ -65,8 +65,19 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
   }, [actions, modelDef.key]);
 
   useEffect(() => {
-    const onDown = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = true; };
-    const onUp = (e: KeyboardEvent) => { keys.current[e.key.toLowerCase()] = false; };
+    const gameKeys = new Set([
+      'KeyW','KeyA','KeyS','KeyD',
+      'ArrowUp','ArrowDown','ArrowLeft','ArrowRight',
+      'Space','ShiftLeft','ShiftRight','Tab',
+    ]);
+    const onDown = (e: KeyboardEvent) => {
+      if (gameKeys.has(e.code)) e.preventDefault();
+      keys.current[e.code] = true;
+    };
+    const onUp = (e: KeyboardEvent) => {
+      if (gameKeys.has(e.code)) e.preventDefault();
+      keys.current[e.code] = false;
+    };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
     return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
@@ -80,7 +91,7 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     const onPointerMove = (e: PointerEvent) => {
       if (!isDragging.current) return;
       orbitRef.current.theta -= (e.clientX - lastMouse.current.x) * 0.005;
-      orbitRef.current.phi = Math.max(-0.2, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + (e.clientY - lastMouse.current.y) * 0.005));
+      orbitRef.current.phi = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + (e.clientY - lastMouse.current.y) * 0.005));
       lastMouse.current = { x: e.clientX, y: e.clientY };
     };
     const onPointerUp = () => { isDragging.current = false; };
@@ -100,40 +111,48 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     if (!groupRef.current) return;
     const group = groupRef.current;
 
-    let moveX = 0; let moveZ = 0;
-    let sprint = false;
+    let moveX = 0; let moveZ = 0; let moveY = 0;
     if (!chatFocusRef.current) {
       const k = keys.current;
-      sprint = !!k['shift'];
-      if (k['w'] || k['arrowup']) moveZ -= 1;
-      if (k['s'] || k['arrowdown']) moveZ += 1;
-      if (k['a'] || k['arrowleft']) moveX += 1;
-      if (k['d'] || k['arrowright']) moveX -= 1;
+      if (k['KeyW'] || k['ArrowUp']) moveZ -= 1;
+      if (k['KeyS'] || k['ArrowDown']) moveZ += 1;
+      if (k['KeyA'] || k['ArrowLeft']) moveX -= 1;
+      if (k['KeyD'] || k['ArrowRight']) moveX += 1;
+      if (k['Space']) moveY += 1;
+      if (k['ShiftLeft'] || k['ShiftRight']) moveY -= 1;
     }
     moveX += joystickRef.current.x;
     moveZ -= joystickRef.current.y;
 
     if (Math.abs(joystickCamRef.current.x) > 0.05 || Math.abs(joystickCamRef.current.y) > 0.05) {
       orbitRef.current.theta -= joystickCamRef.current.x * 2.5 * delta;
-      orbitRef.current.phi = Math.max(-0.2, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + joystickCamRef.current.y * 2.5 * delta));
+      orbitRef.current.phi = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, orbitRef.current.phi + joystickCamRef.current.y * 2.5 * delta));
+    }
+
+    let fast = false;
+    if (!chatFocusRef.current) {
+      fast = !!keys.current['Tab'];
     }
 
     const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
-    const isMoving = len > 0.01;
+    const isMovingH = len > 0.01;
+    const isMoving = isMovingH || Math.abs(moveY) > 0.01;
+    const speedMul = fast ? 4 : 1;
 
     _camForward.set(0, 0, -1).applyAxisAngle(_up, orbitRef.current.theta - Math.PI);
-    _camRight.crossVectors(_camForward, _up).normalize();
+    _camRight.crossVectors(_up, _camForward).normalize();
 
-    if (isMoving) {
+    if (isMovingH) {
       const normX = moveX / Math.max(len, 1);
       const normZ = moveZ / Math.max(len, 1);
-      const v = MOVE_SPEED * (sprint ? 5 : 1) * delta;
+      const v = MOVE_SPEED * speedMul * delta;
       group.position.x += (_camRight.x * normX + _camForward.x * normZ) * v;
       group.position.z += (_camRight.z * normX + _camForward.z * normZ) * v;
       _moveDir.set(_camRight.x * normX + _camForward.x * normZ, 0, _camRight.z * normX + _camForward.z * normZ).normalize();
       _targetQuat.setFromRotationMatrix(_mat.lookAt(_origin, _moveDir, _up));
       group.quaternion.slerp(_targetQuat, 0.15);
     }
+    group.position.y += moveY * MOVE_SPEED * speedMul * delta;
     group.position.y = Math.max(0, group.position.y);
 
     const walkName = resolveAnim(modelDef.walkAnim, 1);

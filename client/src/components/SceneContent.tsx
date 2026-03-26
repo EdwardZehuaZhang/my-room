@@ -6,6 +6,8 @@ import { useSocket } from '../hooks/useSocket.ts';
 
 interface SceneContentProps {
   splatUrl: string;
+  position: [number, number, number];
+  rotation: [number, number, number];
   onProgress: (pct: number) => void;
   onLoaded: () => void;
   joystickRef: MutableRefObject<{ x: number; y: number }>;
@@ -18,6 +20,8 @@ interface SceneContentProps {
  */
 export default function SceneContent({
   splatUrl,
+  position,
+  rotation,
   onProgress,
   onLoaded,
   joystickRef,
@@ -29,7 +33,7 @@ export default function SceneContent({
   return (
     <>
       <ambientLight intensity={0.6} />
-      <SplatScene splatUrl={splatUrl} onProgress={onProgress} onLoaded={onLoaded} />
+      <SplatScene splatUrl={splatUrl} position={position} rotation={rotation} onProgress={onProgress} onLoaded={onLoaded} />
       <RemoteAvatars />
       <LocalAvatar
         localPosRef={localPosRef}

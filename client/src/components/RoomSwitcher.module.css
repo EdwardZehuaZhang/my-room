@@ -1,0 +1,135 @@
+.panel {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  z-index: 100;
+  font-family: var(--font-mono);
+}
+
+.title {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 0.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.tab {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.tab:hover {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+}
+
+.tabActive {
+  border-color: var(--lime);
+  color: var(--lime);
+  background: rgba(180, 255, 80, 0.08);
+}
+
+/* Glitched tab — distinct accent */
+.tabGlitched {
+  border-color: rgba(255, 60, 120, 0.3);
+  color: rgba(255, 60, 120, 0.6);
+}
+
+.tabGlitched:hover {
+  border-color: rgba(255, 60, 120, 0.6);
+  color: rgb(255, 60, 120);
+}
+
+.tabGlitchedActive {
+  border-color: rgb(255, 60, 120);
+  color: rgb(255, 60, 120);
+  background: rgba(255, 60, 120, 0.08);
+}
+
+/* Toggle section */
+.toggleSection {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.toggleTitle {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 60, 120, 0.6);
+  margin-bottom: 0.4rem;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.2rem 0;
+}
+
+.toggleLabel {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.toggle {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.toggleOn {
+  background: rgba(255, 60, 120, 0.2);
+  border-color: rgb(255, 60, 120);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(14px);
+  background: rgb(255, 60, 120);
+}
+
+/* Hide desktop room switcher on touch/mobile devices (MobileNavBar handles rooms) */
+@media not all and (hover: hover) and (pointer: fine) {
+  .panel {
+    display: none;
+  }
+}

@@ -7,31 +7,62 @@ import SceneContent from './components/SceneContent.tsx';
 import ServerFullModal from './components/ServerFullModal.tsx';
 import MobileJoysticks from './components/MobileJoysticks.tsx';
 import ChatPanel from './components/ChatPanel.tsx';
-
-const splatUrl = import.meta.env.VITE_SPLAT_URL as string | undefined;
-
-function MissingUrl() {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        fontFamily: 'var(--font-mono)',
-        color: 'var(--lime)',
-        fontSize: '0.9rem',
-      }}
-    >
-      // VITE_SPLAT_URL is not defined
-    </div>
-  );
-}
+import ControlsPanel from './components/ControlsPanel.tsx';
+import RoomSwitcher, { ROOMS, GLITCHED_BASE, GLITCHED_TOGGLES } from './components/RoomSwitcher.tsx';
+import MobileNavBar from './components/MobileNavBar.tsx';
+import type { SheetId } from './components/MobileNavBar.tsx';
 
 export default function App() {
   const joined = usePlayerStore((s) => s.joined);
+  const [activeRoom, setActiveRoom] = useState(ROOMS[0].key);
+  const [glitchedToggles, setGlitchedToggles] = useState<Record<string, boolean>>({});
   const [progress, setProgress] = useState(0);
   const [loaded, setLoaded] = useState(false);
+
+  // Resolve which splat to show
+  let splatUrl: string;
+  let position: [number, number, number];
+  let rotation: [number, number, number];
+  let sceneKey: string;
+
+  if (activeRoom === 'glitched') {
+    const activeToggle = GLITCHED_TOGGLES.find((t) => glitchedToggles[t.key]);
+    splatUrl = activeToggle ? activeToggle.splatUrl : GLITCHED_BASE.splatUrl;
+    position = activeToggle ? activeToggle.position : GLITCHED_BASE.position;
+    rotation = activeToggle ? activeToggle.rotation : GLITCHED_BASE.rotation;
+    sceneKey = activeToggle ? `glitched-${activeToggle.key}` : 'glitched-base';
+  } else {
+    const room = ROOMS.find((r) => r.key === activeRoom) ?? ROOMS[0];
+    splatUrl = room.splatUrl;
+    position = room.position;
+    rotation = room.rotation;
+    sceneKey = room.key;
+  }
+
+  const handleRoomSwitch = useCallback((key: string) => {
+    setActiveRoom(key);
+    setLoaded(false);
+    setProgress(0);
+  }, []);
+
+  const handleToggleGlitched = useCallback((key: string) => {
+    setGlitchedToggles((prev) => {
+      // Turn off all others, toggle the clicked one
+      const next: Record<string, boolean> = {};
+      for (const t of GLITCHED_TOGGLES) {
+        next[t.key] = t.key === key ? !prev[t.key] : false;
+      }
+      return next;
+    });
+    setLoaded(false);
+    setProgress(0);
+  }, []);
+
+  // Mobile bottom-sheet state
+  const [mobileSheet, setMobileSheet] = useState<SheetId | null>(null);
+  const handleToggleSheet = useCallback((sheet: SheetId) => {
+    setMobileSheet((prev) => (prev === sheet ? null : sheet));
+  }, []);
 
   // Shared joystick refs: written by MobileJoysticks (HTML), read by LocalAvatar (R3F)
   const joystickRef = useRef({ x: 0, y: 0 });
@@ -48,15 +79,21 @@ export default function App() {
     return <EntryScreen />;
   }
 
-  if (!splatUrl) {
-    return <MissingUrl />;
-  }
-
   return (
     <>
       <LoadingOverlay progress={progress} done={loaded} />
       <ServerFullModal />
       <ChatPanel />
+      <ControlsPanel />
+      <RoomSwitcher activeRoom={activeRoom} glitchedToggles={glitchedToggles} onSwitch={handleRoomSwitch} onToggleGlitched={handleToggleGlitched} />
+      <MobileNavBar
+        activeSheet={mobileSheet}
+        onToggleSheet={handleToggleSheet}
+        activeRoom={activeRoom}
+        glitchedToggles={glitchedToggles}
+        onSwitch={handleRoomSwitch}
+        onToggleGlitched={handleToggleGlitched}
+      />
       <MobileJoysticks joystickRef={joystickRef} joystickCamRef={joystickCamRef} />
       <Canvas
         style={{
@@ -70,7 +107,10 @@ export default function App() {
       >
         <Suspense fallback={null}>
           <SceneContent
+            key={sceneKey}
             splatUrl={splatUrl}
+            position={position}
+            rotation={rotation}
             onProgress={onProgress}
             onLoaded={onLoaded}
             joystickRef={joystickRef}

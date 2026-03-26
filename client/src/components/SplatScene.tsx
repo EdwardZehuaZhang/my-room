@@ -8,11 +8,13 @@ import { Splat } from '@react-three/drei';
 
 interface SplatSceneProps {
   splatUrl: string;
+  position: [number, number, number];
+  rotation: [number, number, number];
   onProgress: (pct: number) => void;
   onLoaded: () => void;
 }
 
-export default function SplatScene({ splatUrl, onProgress, onLoaded }: SplatSceneProps) {
+export default function SplatScene({ splatUrl, position, rotation, onProgress, onLoaded }: SplatSceneProps) {
   const { camera } = useThree();
 
   // Set initial camera position
@@ -27,10 +29,8 @@ export default function SplatScene({ splatUrl, onProgress, onLoaded }: SplatScen
     onLoaded();
   }, [onProgress, onLoaded]);
 
-  const yOffset = parseFloat((import.meta.env.VITE_SPLAT_Y_OFFSET as string) ?? '0');
-
   return (
-    <group position={[0, yOffset, 0]} renderOrder={-1}>
+    <group position={position} rotation={rotation} renderOrder={-1}>
       <Splat src={splatUrl} />
     </group>
   );
