@@ -27,10 +27,6 @@ export const GLITCHED_BASE: RoomDef = {
   rotation: [0, 0, 0],
 };
 
-// Prefetch the default room splat as early as possible (module load time).
-// The browser caches the response so <Splat> loads faster when the user enters.
-fetch(GLITCHED_BASE.splatUrl).catch(() => {});
-
 export interface RoomSwitcherContentProps {
   activeRoom: string;
   onSwitch: (key: string) => void;
