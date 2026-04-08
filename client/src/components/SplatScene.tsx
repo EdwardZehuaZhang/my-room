@@ -1,10 +1,13 @@
 /**
  * Splat renderer using @react-three/drei <Splat>.
  * Supports the .splat binary format (antimatter15 layout).
+ * Downloads the entire file before rendering to avoid partial display.
  */
 import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Splat } from '@react-three/drei';
+import { useSplatBlobUrl } from '../hooks/useSplatBlobUrl';
+
 interface SplatSceneProps {
   splatUrl: string;
   position: [number, number, number];
@@ -15,6 +18,7 @@ interface SplatSceneProps {
 
 export default function SplatScene({ splatUrl, position, rotation, onProgress, onLoaded }: SplatSceneProps) {
   const { camera } = useThree();
+  const { blobUrl } = useSplatBlobUrl(splatUrl);
 
   // Set initial camera position
   useEffect(() => {
@@ -22,15 +26,19 @@ export default function SplatScene({ splatUrl, position, rotation, onProgress, o
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
-  // Signal loaded
+  // Signal loaded once the full file is downloaded
   useEffect(() => {
-    onProgress(100);
-    onLoaded();
-  }, [onProgress, onLoaded]);
+    if (blobUrl) {
+      onProgress(100);
+      onLoaded();
+    }
+  }, [blobUrl, onProgress, onLoaded]);
+
+  if (!blobUrl) return null;
 
   return (
     <group position={position} rotation={rotation} renderOrder={-1}>
-      <Splat src={splatUrl} />
+      <Splat src={blobUrl} />
     </group>
   );
 }
