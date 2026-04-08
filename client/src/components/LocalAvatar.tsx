@@ -45,10 +45,12 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
   const { actions } = useAnimations(animations, groupRef);
 
   // Normalize using known heightHint so all models match in-world
-  const normalizedScale = (TARGET_HEIGHT / modelDef.heightHint) * avatarScale;
-  const scaledHeight = TARGET_HEIGHT * avatarScale;
-  const scaledCamBehind = CAM_BEHIND * avatarScale;
-  const scaledCamAbove = CAM_ABOVE * avatarScale;
+  // Size slider 1-10 maps to 1x, 2x, 4x, 8x, … 512x (powers of 2)
+  const scaleFactor = Math.pow(2, avatarScale - 1);
+  const normalizedScale = (TARGET_HEIGHT / modelDef.heightHint) * scaleFactor;
+  const scaledHeight = TARGET_HEIGHT * scaleFactor;
+  const scaledCamBehind = CAM_BEHIND * scaleFactor;
+  const scaledCamAbove = CAM_ABOVE * scaleFactor;
 
   const keys = useRef<Record<string, boolean>>({});
   const orbitRef = useRef({ theta: Math.PI, phi: 0.3 });
