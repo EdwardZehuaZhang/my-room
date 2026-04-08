@@ -22,7 +22,7 @@ export const ROOMS: RoomDef[] = [
 export const GLITCHED_BASE: RoomDef = {
   key: 'glitched',
   name: 'Glitched',
-  splatUrl: `${BLOB_BASE}/PS_Room5.splat`,
+  splatUrl: `${BLOB_BASE}/PS_Room5_Drawer.splat`,
   position: [0, 0, 0],
   rotation: [0, 0, 0],
 };
