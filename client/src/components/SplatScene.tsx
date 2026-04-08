@@ -1,14 +1,10 @@
 /**
  * Splat renderer using @react-three/drei <Splat>.
  * Supports the .splat binary format (antimatter15 layout).
- *
- * Stream-preloads the file into the browser HTTP cache (without buffering in JS memory),
- * then renders <Splat> which loads instantly from cache — so the full scene appears at once.
  */
 import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Splat } from '@react-three/drei';
-import { useSplatPreload } from '../hooks/useSplatPreload';
 
 interface SplatSceneProps {
   splatUrl: string;
@@ -20,7 +16,6 @@ interface SplatSceneProps {
 
 export default function SplatScene({ splatUrl, position, rotation, onProgress, onLoaded }: SplatSceneProps) {
   const { camera } = useThree();
-  const { ready, progress } = useSplatPreload(splatUrl);
 
   // Set initial camera position
   useEffect(() => {
@@ -28,17 +23,11 @@ export default function SplatScene({ splatUrl, position, rotation, onProgress, o
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
-  // Forward preload progress
+  // Signal loaded
   useEffect(() => {
-    onProgress(progress);
-  }, [progress, onProgress]);
-
-  // Signal loaded once cache is warm
-  useEffect(() => {
-    if (ready) onLoaded();
-  }, [ready, onLoaded]);
-
-  if (!ready) return null;
+    onProgress(100);
+    onLoaded();
+  }, [onProgress, onLoaded]);
 
   return (
     <group position={position} rotation={rotation} renderOrder={-1}>
