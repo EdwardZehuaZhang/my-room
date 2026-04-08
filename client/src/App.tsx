@@ -25,20 +25,17 @@ export default function App() {
   let splatUrl: string;
   let position: [number, number, number];
   let rotation: [number, number, number];
-  let sceneKey: string;
 
   if (activeRoom === 'glitched') {
     const activeToggle = GLITCHED_TOGGLES.find((t) => glitchedToggles[t.key]);
     splatUrl = activeToggle ? activeToggle.splatUrl : GLITCHED_BASE.splatUrl;
     position = activeToggle ? activeToggle.position : GLITCHED_BASE.position;
     rotation = activeToggle ? activeToggle.rotation : GLITCHED_BASE.rotation;
-    sceneKey = activeToggle ? `glitched-${activeToggle.key}` : 'glitched-base';
   } else {
     const room = ROOMS.find((r) => r.key === activeRoom) ?? ROOMS[0];
     splatUrl = room.splatUrl;
     position = room.position;
     rotation = room.rotation;
-    sceneKey = room.key;
   }
 
   const handleRoomSwitch = useCallback((key: string) => {
