@@ -49,6 +49,13 @@ Deployed at https://edward-my-room.vercel.app. Auto-deploys on push to `main` vi
 - `vercel.json` in project root handles build config
 - `VITE_SERVER_URL` env var points to the Railway backend
 
+#### Splat Loading: Local vs Production
+
+Vercel's CDN applies Brotli compression to `.splat` files, which strips the `Content-Length` header. drei's `SplatLoader` requires `Content-Length` to parse the file, so loading fails on production without a workaround.
+
+- **Production (Vercel):** `SplatScene.tsx` uses the `useSplatBlobUrl` hook to fetch the splat file first and create a local blob URL that always has a correct `Content-Length`. This must be enabled for the deployed site to work.
+- **Local dev:** The Vite dev server proxies splat requests with `Accept-Encoding: identity` (configured in `client/vite.config.ts`), which avoids CDN compression entirely. The `useSplatBlobUrl` hook also works locally, so the current code works in both environments.
+
 ### Server → Railway
 
 1. Import the repo on [railway.app](https://railway.app)
