@@ -11,7 +11,7 @@ import { getModel } from '../models.ts';
 const TARGET_HEIGHT = 0.1;
 const CAM_BEHIND = 0.8;
 const CAM_ABOVE = 0.35;
-const MOVE_SPEED = 0.17;
+const MOVE_SPEED = 0.35;
 
 // Pre-allocated reusable objects
 const _camForward = new THREE.Vector3();
@@ -164,7 +164,6 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
       group.quaternion.slerp(_targetQuat, 0.15);
     }
     group.position.y += moveY * MOVE_SPEED * speedMul * delta;
-    group.position.y = Math.max(0, group.position.y);
 
     const walkName = resolveAnim(modelDef.walkAnim, 1);
     const idleName = resolveAnim(modelDef.idleAnim, 0);

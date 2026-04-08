@@ -60,7 +60,7 @@ export default function ModelPreview({ modelDef, selected, onClick }: Props) {
         </Canvas>
       </div>
       <div className={`${styles.label} ${selected ? styles.labelSelected : ''}`}>
-        {selected ? '\u2713' : ''}{modelDef.name}
+        {modelDef.name}
       </div>
     </div>
   );
