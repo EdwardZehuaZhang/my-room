@@ -12,6 +12,7 @@ interface SceneContentProps {
   onLoaded: () => void;
   joystickRef: MutableRefObject<{ x: number; y: number }>;
   joystickCamRef: MutableRefObject<{ x: number; y: number }>;
+  mobileFlyRef: MutableRefObject<{ up: boolean; down: boolean }>;
 }
 
 /**
@@ -26,6 +27,7 @@ export default function SceneContent({
   onLoaded,
   joystickRef,
   joystickCamRef,
+  mobileFlyRef,
 }: SceneContentProps) {
   // useSocket connects and emits player_move at 10 Hz
   const { localPosRef, localRotRef } = useSocket();
@@ -33,13 +35,14 @@ export default function SceneContent({
   return (
     <>
       <ambientLight intensity={0.6} />
-      <SplatScene splatUrl={splatUrl} position={position} rotation={rotation} onProgress={onProgress} onLoaded={onLoaded} />
+      <SplatScene key={splatUrl} splatUrl={splatUrl} position={position} rotation={rotation} onProgress={onProgress} onLoaded={onLoaded} />
       <RemoteAvatars />
       <LocalAvatar
         localPosRef={localPosRef}
         localRotRef={localRotRef}
         joystickRef={joystickRef}
         joystickCamRef={joystickCamRef}
+        mobileFlyRef={mobileFlyRef}
       />
     </>
   );

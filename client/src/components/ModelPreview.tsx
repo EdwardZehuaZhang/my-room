@@ -4,6 +4,7 @@ import { useGLTF, useAnimations } from '@react-three/drei';
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 import * as THREE from 'three';
 import type { ModelDef } from '../models.ts';
+import styles from './ModelPreview.module.css';
 
 const PREVIEW_TARGET_HEIGHT = 1.6;
 
@@ -44,19 +45,9 @@ export default function ModelPreview({ modelDef, selected, onClick }: Props) {
   return (
     <div
       onClick={onClick}
-      style={{
-        cursor: 'pointer',
-        border: selected ? '2px solid #B4FF4F' : '2px solid rgba(255,255,255,0.1)',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        background: 'rgba(255,255,255,0.04)',
-        transition: 'border-color 0.2s',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
+      className={`${styles.card} ${selected ? styles.cardSelected : ''}`}
     >
-      <div style={{ width: '100%', height: '120px' }}>
+      <div className={styles.canvasWrap}>
         <Canvas
           camera={{ position: [0, 0, 4.44], fov: 40 }}
           gl={{ antialias: false, alpha: true }}
@@ -68,15 +59,8 @@ export default function ModelPreview({ modelDef, selected, onClick }: Props) {
           <PreviewModel modelDef={modelDef} />
         </Canvas>
       </div>
-      <div style={{
-        padding: '6px 0 8px',
-        fontFamily: 'monospace',
-        fontSize: '0.72rem',
-        color: selected ? '#B4FF4F' : 'rgba(255,255,255,0.6)',
-        letterSpacing: '0.05em',
-        textTransform: 'uppercase',
-      }}>
-        {selected ? 'âœ?' : ''}{modelDef.name}
+      <div className={`${styles.label} ${selected ? styles.labelSelected : ''}`}>
+        {selected ? '\u2713' : ''}{modelDef.name}
       </div>
     </div>
   );

@@ -1,0 +1,5 @@
+node_modules
+*.splat
+*.ply
+server
+client/node_modules

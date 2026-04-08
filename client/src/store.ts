@@ -6,7 +6,11 @@ interface PlayerState {
   name: string;
   modelKey: string;
   joined: boolean;
+  avatarScale: number;
+  firstPerson: boolean;
   setPlayer: (name: string, modelKey: string) => void;
+  setAvatarScale: (scale: number) => void;
+  toggleFirstPerson: () => void;
   resetJoined: () => void;
 }
 
@@ -14,7 +18,11 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   name: '',
   modelKey: 'robot',
   joined: false,
+  avatarScale: 1,
+  firstPerson: false,
   setPlayer: (name, modelKey) => set({ name, modelKey, joined: true }),
+  setAvatarScale: (scale) => set({ avatarScale: Math.max(1, Math.min(10, scale)) }),
+  toggleFirstPerson: () => set((s) => ({ firstPerson: !s.firstPerson })),
   resetJoined: () => set({ joined: false }),
 }));
 

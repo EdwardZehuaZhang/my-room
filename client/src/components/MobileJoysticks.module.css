@@ -1,6 +1,8 @@
+/* Left joystick zone */
 .zone {
   position: fixed;
   bottom: 0;
+  left: 0;
   width: 50%;
   height: 40%;
   touch-action: none;
@@ -9,17 +11,55 @@
   z-index: 10;
 }
 
-.zone[data-side='left'] {
-  left: 0;
+/* Fly up / down buttons (right side) */
+.flyButtons {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10;
+  pointer-events: auto;
+  touch-action: none;
 }
 
-.zone[data-side='right'] {
-  right: 0;
+.flyBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  color: var(--lime);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.flyBtn:active {
+  background: rgba(180, 255, 80, 0.15);
+  border-color: var(--lime);
+}
+
+.flyIcon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Hide on desktop */
 @media (hover: hover) and (pointer: fine) {
-  .zone {
+  .zone,
+  .flyButtons {
     display: none;
   }
 }

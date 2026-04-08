@@ -11,6 +11,8 @@ import ControlsPanel from './components/ControlsPanel.tsx';
 import RoomSwitcher, { ROOMS, GLITCHED_BASE, GLITCHED_TOGGLES } from './components/RoomSwitcher.tsx';
 import MobileNavBar from './components/MobileNavBar.tsx';
 import type { SheetId } from './components/MobileNavBar.tsx';
+import PortraitOverlay from './components/PortraitOverlay.tsx';
+import SizeSlider from './components/SizeSlider.tsx';
 
 export default function App() {
   const joined = usePlayerStore((s) => s.joined);
@@ -67,6 +69,7 @@ export default function App() {
   // Shared joystick refs: written by MobileJoysticks (HTML), read by LocalAvatar (R3F)
   const joystickRef = useRef({ x: 0, y: 0 });
   const joystickCamRef = useRef({ x: 0, y: 0 });
+  const mobileFlyRef = useRef({ up: false, down: false });
 
   // Stable callback refs to avoid re-creating the splat instance
   const onProgress = useCallback((pct: number) => setProgress(pct), []);
@@ -76,15 +79,22 @@ export default function App() {
   }, []);
 
   if (!joined) {
-    return <EntryScreen />;
+    return (
+      <>
+        <PortraitOverlay />
+        <EntryScreen />
+      </>
+    );
   }
 
   return (
     <>
+      <PortraitOverlay />
       <LoadingOverlay progress={progress} done={loaded} />
       <ServerFullModal />
       <ChatPanel />
       <ControlsPanel />
+      <SizeSlider />
       <RoomSwitcher activeRoom={activeRoom} glitchedToggles={glitchedToggles} onSwitch={handleRoomSwitch} onToggleGlitched={handleToggleGlitched} />
       <MobileNavBar
         activeSheet={mobileSheet}
@@ -94,7 +104,7 @@ export default function App() {
         onSwitch={handleRoomSwitch}
         onToggleGlitched={handleToggleGlitched}
       />
-      <MobileJoysticks joystickRef={joystickRef} joystickCamRef={joystickCamRef} />
+      <MobileJoysticks joystickRef={joystickRef} joystickCamRef={joystickCamRef} mobileFlyRef={mobileFlyRef} />
       <Canvas
         style={{
           width: '100%',
@@ -107,7 +117,6 @@ export default function App() {
       >
         <Suspense fallback={null}>
           <SceneContent
-            key={sceneKey}
             splatUrl={splatUrl}
             position={position}
             rotation={rotation}
@@ -115,6 +124,7 @@ export default function App() {
             onLoaded={onLoaded}
             joystickRef={joystickRef}
             joystickCamRef={joystickCamRef}
+            mobileFlyRef={mobileFlyRef}
           />
         </Suspense>
       </Canvas>

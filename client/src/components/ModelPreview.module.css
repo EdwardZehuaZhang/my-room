@@ -1,0 +1,45 @@
+.card {
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cardSelected {
+  border-color: #B4FF4F;
+}
+
+.canvasWrap {
+  width: 100%;
+  height: 120px;
+}
+
+.label {
+  padding: 6px 0 8px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.labelSelected {
+  color: #B4FF4F;
+}
+
+/* Compact avatar previews on landscape mobile */
+@media (max-height: 450px) and (orientation: landscape) {
+  .canvasWrap {
+    height: 72px;
+  }
+
+  .label {
+    padding: 3px 0 4px;
+    font-size: 0.6rem;
+  }
+}

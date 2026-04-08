@@ -16,22 +16,26 @@ export interface GlitchedToggle {
   rotation: [number, number, number]; // [x, y, z] in radians
 }
 
+const BLOB_BASE = import.meta.env.DEV
+  ? '/splat-proxy'
+  : 'https://jslyit1chyjxlulc.public.blob.vercel-storage.com';
+
 export const ROOMS: RoomDef[] = [
-  { key: 'room1', name: 'Midnight', splatUrl: '/PS_Room1.splat', position: [0, 0.9, 0], rotation: [0, 0, 0] },
-  { key: 'room2', name: 'Morning', splatUrl: '/PS_Room2.splat', position: [0, 0.9, 0], rotation: [0, 0, 0] },
-  { key: 'room3', name: 'Windy', splatUrl: '/PS_Room3.splat', position: [0, 0.9, 0], rotation: [0, 0, 0] },
+  { key: 'room1', name: 'Midnight', splatUrl: `${BLOB_BASE}/PS_Room1.splat`, position: [0, 0.9, 0], rotation: [0, 0, 0] },
+  { key: 'room2', name: 'Morning', splatUrl: `${BLOB_BASE}/PS_Room2.splat`, position: [0, 0.9, 0], rotation: [0, 0, 0] },
+  { key: 'room3', name: 'Windy', splatUrl: `${BLOB_BASE}/PS_Room3.splat`, position: [0, 0.9, 0], rotation: [0, 0, 0] },
 ];
 
 export const GLITCHED_BASE: RoomDef = {
   key: 'glitched',
   name: 'Glitched',
-  splatUrl: '/PS_Room5.splat',
+  splatUrl: `${BLOB_BASE}/PS_Room5.splat`,
   position: [0, 0.9, 0],
   rotation: [0, 0, 0],
 };
 
 export const GLITCHED_TOGGLES: GlitchedToggle[] = [
-  { key: 'drawer', label: 'Drawer', splatUrl: '/PS_Room5_Drawer.splat', position: [1.4, -1, -5], rotation: [-0.14, 1.3, 0.13] },
+  { key: 'drawer', label: 'Drawer', splatUrl: `${BLOB_BASE}/PS_Room5_Drawer.splat`, position: [1.4, -1, -5], rotation: [-0.14, 1.3, 0.13] },
 ];
 
 export interface RoomSwitcherContentProps {

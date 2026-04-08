@@ -27,13 +27,17 @@ interface LocalAvatarProps {
   localRotRef: MutableRefObject<[number, number, number, number]>;
   joystickRef: MutableRefObject<{ x: number; y: number }>;
   joystickCamRef: MutableRefObject<{ x: number; y: number }>;
+  mobileFlyRef: MutableRefObject<{ up: boolean; down: boolean }>;
 }
 
-export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joystickCamRef }: LocalAvatarProps) {
+export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joystickCamRef, mobileFlyRef }: LocalAvatarProps) {
   const name = usePlayerStore((s) => s.name);
   const modelKey = usePlayerStore((s) => s.modelKey);
+  const avatarScale = usePlayerStore((s) => s.avatarScale);
+  const firstPerson = usePlayerStore((s) => s.firstPerson);
   const modelDef = getModel(modelKey);
   const groupRef = useRef<THREE.Group>(null);
+  const modelRef = useRef<THREE.Group>(null);
   const { camera, gl } = useThree();
 
   const { scene, animations } = useGLTF(modelDef.url);
@@ -41,7 +45,10 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
   const { actions } = useAnimations(animations, groupRef);
 
   // Normalize using known heightHint so all models match in-world
-  const normalizedScale = TARGET_HEIGHT / modelDef.heightHint;
+  const normalizedScale = (TARGET_HEIGHT / modelDef.heightHint) * avatarScale;
+  const scaledHeight = TARGET_HEIGHT * avatarScale;
+  const scaledCamBehind = CAM_BEHIND * avatarScale;
+  const scaledCamAbove = CAM_ABOVE * avatarScale;
 
   const keys = useRef<Record<string, boolean>>({});
   const orbitRef = useRef({ theta: Math.PI, phi: 0.3 });
@@ -123,6 +130,8 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     }
     moveX += joystickRef.current.x;
     moveZ -= joystickRef.current.y;
+    if (mobileFlyRef.current.up) moveY += 1;
+    if (mobileFlyRef.current.down) moveY -= 1;
 
     if (Math.abs(joystickCamRef.current.x) > 0.05 || Math.abs(joystickCamRef.current.y) > 0.05) {
       orbitRef.current.theta -= joystickCamRef.current.x * 2.5 * delta;
@@ -167,25 +176,42 @@ export default function LocalAvatar({ localPosRef, localRotRef, joystickRef, joy
     localPosRef.current = [group.position.x, group.position.y, group.position.z];
     localRotRef.current = [group.quaternion.x, group.quaternion.y, group.quaternion.z, group.quaternion.w];
 
+    // Hide model in first-person mode
+    if (modelRef.current) modelRef.current.visible = !firstPerson;
+
     const { theta, phi } = orbitRef.current;
-    camera.position.set(
-      group.position.x + CAM_BEHIND * Math.sin(theta) * Math.cos(phi),
-      group.position.y + CAM_ABOVE + CAM_BEHIND * Math.sin(phi),
-      group.position.z + CAM_BEHIND * Math.cos(theta) * Math.cos(phi),
-    );
-    camera.lookAt(group.position.x, group.position.y + TARGET_HEIGHT * 0.5, group.position.z);
+    if (firstPerson) {
+      // Eye-level camera; negate phi so dragging up looks up
+      const fpPhi = -phi;
+      const eyeY = group.position.y + scaledHeight * 0.85;
+      camera.position.set(group.position.x, eyeY, group.position.z);
+      camera.lookAt(
+        group.position.x - Math.sin(theta) * Math.cos(fpPhi),
+        eyeY + Math.sin(fpPhi),
+        group.position.z - Math.cos(theta) * Math.cos(fpPhi),
+      );
+    } else {
+      camera.position.set(
+        group.position.x + scaledCamBehind * Math.sin(theta) * Math.cos(phi),
+        group.position.y + scaledCamAbove + scaledCamBehind * Math.sin(phi),
+        group.position.z + scaledCamBehind * Math.cos(theta) * Math.cos(phi),
+      );
+      camera.lookAt(group.position.x, group.position.y + scaledHeight * 0.5, group.position.z);
+    }
   });
 
   return (
     <group ref={groupRef}>
-      <primitive object={clone} scale={normalizedScale} rotation={[0, modelDef.rotationY, 0]} />
+      <group ref={modelRef}>
+        <primitive object={clone} scale={normalizedScale} rotation={[0, modelDef.rotationY, 0]} />
+      </group>
       <Text
-        position={[0, TARGET_HEIGHT * 1.3, 0]}
-        fontSize={TARGET_HEIGHT * 0.6}
+        position={[0, scaledHeight * 1.3, 0]}
+        fontSize={scaledHeight * 0.6}
         color="white"
         anchorX="center"
         anchorY="bottom"
-        outlineWidth={TARGET_HEIGHT * 0.04}
+        outlineWidth={scaledHeight * 0.04}
         outlineColor="black"
       >
         {name}

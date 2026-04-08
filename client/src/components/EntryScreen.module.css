@@ -11,6 +11,7 @@
     var(--bg-void);
   background-size: 200% 200%;
   animation: drift 20s ease-in-out infinite alternate;
+  overflow-y: auto;
 }
 
 @keyframes drift {
@@ -26,10 +27,30 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   padding: 2.5rem 2.2rem 2rem;
-  width: min(420px, 90vw);
+  width: min(520px, 90vw);
   display: flex;
   flex-direction: column;
   gap: 1.4rem;
+}
+
+/* ── Card header ── */
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* ── Form content wrapper (becomes 2-col on landscape mobile) ── */
+.formContent {
+  display: contents;
+}
+
+.formLeft {
+  display: contents;
+}
+
+.formRight {
+  display: contents;
 }
 
 /* ── Eyebrow ── */
@@ -59,12 +80,14 @@
 
 /* ── Name input ── */
 .fieldLabel {
+  display: block;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 0.7rem;
+  margin-bottom: calc(0.7rem + 0px);
+  margin-top: 16px;
 }
 
 .nameInput {
@@ -96,6 +119,13 @@
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 0.2rem;
+}
+
+.avatarGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: -16px;
 }
 
 .avatarRow {
@@ -181,7 +211,7 @@
   opacity: 0.88;
 }
 
-/* ── Mobile ── */
+/* ── Portrait mobile (unchanged, same as before) ── */
 @media (max-width: 480px) {
   .card {
     padding: 1.8rem 1.2rem 1.4rem;
@@ -190,5 +220,76 @@
   .avatarRow {
     flex-wrap: wrap;
     justify-content: center;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Landscape mobile: 2-column compact layout
+   Targets short viewports (landscape phones)
+   ═══════════════════════════════════════════════════════ */
+@media (max-height: 450px) and (orientation: landscape) {
+  .backdrop {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .card {
+    width: min(680px, 96vw);
+    padding: 1rem 1.4rem;
+    gap: 0.6rem;
+    border-radius: 14px;
+  }
+
+  .cardHeader {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.8rem;
+  }
+
+  .title {
+    font-size: 1.4rem;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .formContent {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .formLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .formRight {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .fieldLabel {
+    margin-bottom: 0.3rem;
+  }
+
+  .nameInput {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .joinBtn {
+    padding: 0.6rem;
+    font-size: 0.88rem;
+  }
+
+  .avatarGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 4px;
   }
 }

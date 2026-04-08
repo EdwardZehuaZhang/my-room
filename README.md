@@ -2,6 +2,8 @@
 
 Browser-based multiplayer Gaussian splat virtual space with up to 100 anonymous users, third-person capsule avatars, and global text chat.
 
+**Live:** https://edward-my-room.vercel.app
+
 ## Prerequisites
 
 - Node 18+
@@ -41,9 +43,11 @@ npm run dev
 
 ### Client → Vercel
 
-1. Import the repo on [vercel.com](https://vercel.com)
-2. Set `VITE_SPLAT_URL` and `VITE_SERVER_URL` environment variables
-3. Deploy — `vercel.json` handles build config
+Deployed at https://edward-my-room.vercel.app. Auto-deploys on push to `main` via GitHub integration.
+
+- Splat files are hosted on Vercel Blob Storage (too large for bundled deploy)
+- `vercel.json` in project root handles build config
+- `VITE_SERVER_URL` env var points to the Railway backend
 
 ### Server → Railway
 
