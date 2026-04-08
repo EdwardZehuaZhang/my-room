@@ -5,8 +5,6 @@
 import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Splat } from '@react-three/drei';
-import { useSplatBlobUrl } from '../hooks/useSplatBlobUrl';
-
 interface SplatSceneProps {
   splatUrl: string;
   position: [number, number, number];
@@ -17,7 +15,6 @@ interface SplatSceneProps {
 
 export default function SplatScene({ splatUrl, position, rotation, onProgress, onLoaded }: SplatSceneProps) {
   const { camera } = useThree();
-  const { blobUrl } = useSplatBlobUrl(splatUrl);
 
   // Set initial camera position
   useEffect(() => {
@@ -25,19 +22,15 @@ export default function SplatScene({ splatUrl, position, rotation, onProgress, o
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
-  // Signal loaded once the blob URL is ready
+  // Signal loaded
   useEffect(() => {
-    if (blobUrl) {
-      onProgress(100);
-      onLoaded();
-    }
-  }, [blobUrl, onProgress, onLoaded]);
-
-  if (!blobUrl) return null;
+    onProgress(100);
+    onLoaded();
+  }, [onProgress, onLoaded]);
 
   return (
     <group position={position} rotation={rotation} renderOrder={-1}>
-      <Splat src={blobUrl} />
+      <Splat src={splatUrl} />
     </group>
   );
 }

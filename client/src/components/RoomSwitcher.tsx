@@ -24,6 +24,7 @@ export const ROOMS: RoomDef[] = [
   { key: 'room1', name: 'Midnight', splatUrl: `${BLOB_BASE}/PS_Room1.splat`, position: [0, 0.9, 0], rotation: [0, 0, 0] },
   { key: 'room2', name: 'Morning', splatUrl: `${BLOB_BASE}/PS_Room2.splat`, position: [0, 0.9, 0], rotation: [0, 0, 0] },
   { key: 'room3', name: 'Afternoon', splatUrl: `${BLOB_BASE}/PS_Room3.splat`, position: [0, 0.9, 0], rotation: [0, 0, 0] },
+  { key: 'room4', name: 'Evening', splatUrl: `${BLOB_BASE}/PS_Room4.splat`, position: [0, 0.9, 0], rotation: [0, 0, 0] },
 ];
 
 export const GLITCHED_BASE: RoomDef = {
