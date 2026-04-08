@@ -10,9 +10,7 @@ interface MobileNavBarProps {
   activeSheet: SheetId | null;
   onToggleSheet: (sheet: SheetId) => void;
   activeRoom: string;
-  glitchedToggles: Record<string, boolean>;
   onSwitch: (key: string) => void;
-  onToggleGlitched: (key: string) => void;
 }
 
 /* ── SVG Icons ── */
@@ -49,9 +47,7 @@ export default function MobileNavBar({
   activeSheet,
   onToggleSheet,
   activeRoom,
-  glitchedToggles,
   onSwitch,
-  onToggleGlitched,
 }: MobileNavBarProps) {
   const isOpen = activeSheet !== null;
 
@@ -83,9 +79,7 @@ export default function MobileNavBar({
                 <div className={styles.roomContent}>
                   <RoomSwitcherContent
                     activeRoom={activeRoom}
-                    glitchedToggles={glitchedToggles}
                     onSwitch={onSwitch}
-                    onToggleGlitched={onToggleGlitched}
                     classNames={roomStyles}
                   />
                 </div>

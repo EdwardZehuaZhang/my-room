@@ -8,7 +8,7 @@ import ServerFullModal from './components/ServerFullModal.tsx';
 import MobileJoysticks from './components/MobileJoysticks.tsx';
 import ChatPanel from './components/ChatPanel.tsx';
 import ControlsPanel from './components/ControlsPanel.tsx';
-import RoomSwitcher, { ROOMS, GLITCHED_BASE, GLITCHED_TOGGLES } from './components/RoomSwitcher.tsx';
+import RoomSwitcher, { ROOMS, GLITCHED_BASE } from './components/RoomSwitcher.tsx';
 import MobileNavBar from './components/MobileNavBar.tsx';
 import type { SheetId } from './components/MobileNavBar.tsx';
 import PortraitOverlay from './components/PortraitOverlay.tsx';
@@ -17,7 +17,6 @@ import SizeSlider from './components/SizeSlider.tsx';
 export default function App() {
   const joined = usePlayerStore((s) => s.joined);
   const [activeRoom, setActiveRoom] = useState(ROOMS[0].key);
-  const [glitchedToggles, setGlitchedToggles] = useState<Record<string, boolean>>({});
   const [progress, setProgress] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
@@ -27,10 +26,9 @@ export default function App() {
   let rotation: [number, number, number];
 
   if (activeRoom === 'glitched') {
-    const activeToggle = GLITCHED_TOGGLES.find((t) => glitchedToggles[t.key]);
-    splatUrl = activeToggle ? activeToggle.splatUrl : GLITCHED_BASE.splatUrl;
-    position = activeToggle ? activeToggle.position : GLITCHED_BASE.position;
-    rotation = activeToggle ? activeToggle.rotation : GLITCHED_BASE.rotation;
+    splatUrl = GLITCHED_BASE.splatUrl;
+    position = GLITCHED_BASE.position;
+    rotation = GLITCHED_BASE.rotation;
   } else {
     const room = ROOMS.find((r) => r.key === activeRoom) ?? ROOMS[0];
     splatUrl = room.splatUrl;
@@ -40,19 +38,6 @@ export default function App() {
 
   const handleRoomSwitch = useCallback((key: string) => {
     setActiveRoom(key);
-    setLoaded(false);
-    setProgress(0);
-  }, []);
-
-  const handleToggleGlitched = useCallback((key: string) => {
-    setGlitchedToggles((prev) => {
-      // Turn off all others, toggle the clicked one
-      const next: Record<string, boolean> = {};
-      for (const t of GLITCHED_TOGGLES) {
-        next[t.key] = t.key === key ? !prev[t.key] : false;
-      }
-      return next;
-    });
     setLoaded(false);
     setProgress(0);
   }, []);
@@ -92,14 +77,12 @@ export default function App() {
       <ChatPanel />
       <ControlsPanel />
       <SizeSlider />
-      <RoomSwitcher activeRoom={activeRoom} glitchedToggles={glitchedToggles} onSwitch={handleRoomSwitch} onToggleGlitched={handleToggleGlitched} />
+      <RoomSwitcher activeRoom={activeRoom} onSwitch={handleRoomSwitch} />
       <MobileNavBar
         activeSheet={mobileSheet}
         onToggleSheet={handleToggleSheet}
         activeRoom={activeRoom}
-        glitchedToggles={glitchedToggles}
         onSwitch={handleRoomSwitch}
-        onToggleGlitched={handleToggleGlitched}
       />
       <MobileJoysticks joystickRef={joystickRef} joystickCamRef={joystickCamRef} mobileFlyRef={mobileFlyRef} />
       <Canvas
