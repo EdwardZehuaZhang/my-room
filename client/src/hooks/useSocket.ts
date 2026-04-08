@@ -15,7 +15,7 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL as string | undefined;
 export function useSocket() {
   const socketRef = useRef<Socket | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  /** Current local position/rotation â€?written from useFrame, read by interval */
+  /** Current local position/rotation ï¿½?written from useFrame, read by interval */
   const localPosRef = useRef<[number, number, number]>([0, 0, 0]);
   const localRotRef = useRef<[number, number, number, number]>([0, 0, 0, 1]);
 
@@ -39,6 +39,13 @@ export function useSocket() {
     socket.on('connect', () => {
       // (Re-)emit join on every connect/reconnect
       socket.emit('player_join', { name, modelKey });
+      addChatMessage({
+        id: `sys-self-join-${Date.now()}`,
+        name,
+        text: `${name} joined`,
+        timestamp: Date.now(),
+        system: true,
+      });
     });
 
     socket.on('player_joined', (player: RemotePlayer) => {
