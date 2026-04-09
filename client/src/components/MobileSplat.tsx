@@ -3,6 +3,7 @@
  * Progressively loads and renders .splat files — shows partial data as it downloads.
  */
 import { useEffect, useRef } from 'react';
+import { Group } from 'three';
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 
 interface MobileSplatProps {
@@ -11,11 +12,9 @@ interface MobileSplatProps {
 
 export default function MobileSplat({ src }: MobileSplatProps) {
   const viewerRef = useRef<GaussianSplats3D.DropInViewer | null>(null);
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
 
   useEffect(() => {
-    let disposed = false;
-
     try {
       const instance = new GaussianSplats3D.DropInViewer({
         gpuAcceleratedSort: false,
