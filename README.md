@@ -53,25 +53,19 @@ Deployed at https://edward-my-room.vercel.app. Auto-deploys on push to `main` vi
 
 Vercel's CDN applies Brotli compression to `.splat` files, which strips the `Content-Length` header. drei's `SplatLoader` requires `Content-Length` to parse the file, so loading fails on production without a workaround.
 
-The fix is the `useSplatBlobUrl` hook in `client/src/hooks/useSplatBlobUrl.ts`, which fetches the splat file and creates a blob URL with correct `Content-Length`. However, this breaks local development. You need to toggle `SplatScene.tsx` depending on the environment:
+**Important:** Never use drei's `<Splat>` component directly. Always use the `<SplatWithBlobUrl>` wrapper (`client/src/components/SplatWithBlobUrl.tsx`), which fetches the splat file via the `useSplatBlobUrl` hook (`client/src/hooks/useSplatBlobUrl.ts`) and creates a blob URL with correct `Content-Length`. This works in both local development and production.
 
-**For production (Vercel) — current state:**
 ```tsx
-// client/src/components/SplatScene.tsx
-import { useSplatBlobUrl } from '../hooks/useSplatBlobUrl';
-// ...
-const { blobUrl } = useSplatBlobUrl(splatUrl);
-// ...
-if (!blobUrl) return null;
-<Splat src={blobUrl} />
+// Always use this — works in both environments:
+import SplatWithBlobUrl from './SplatWithBlobUrl.tsx';
+
+<SplatWithBlobUrl src={splatUrl} />
 ```
 
-**For local development — change to:**
-```tsx
-// client/src/components/SplatScene.tsx
-// Remove the useSplatBlobUrl import and usage, pass URL directly:
-<Splat src={splatUrl} />
-```
+There are three places that render splats — all must use `SplatWithBlobUrl`:
+1. `client/src/components/SplatScene.tsx` — in-room splat after joining
+2. `client/src/App.tsx` — preview splat before joining
+3. `client/src/components/SplatPreviewBg.tsx` — entry screen background
 
 The Vite dev server proxies splat requests with `Accept-Encoding: identity` (configured in `client/vite.config.ts`), which avoids CDN compression and preserves `Content-Length` locally.
 

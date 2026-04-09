@@ -21,7 +21,7 @@ export default function EntryScreen() {
         <div className={styles.cardHeader}>
           <span className={styles.eyebrow}>{'// enter the room'}</span>
           <h1 className={styles.title}>my-room</h1>
-          <p className={styles.subtitle}>A shared space. Up to 100 visitors at once.</p>
+          <p className={styles.subtitle}>A shared space. Up to 200 visitors at once.</p>
         </div>
 
         <div className={styles.formContent}>

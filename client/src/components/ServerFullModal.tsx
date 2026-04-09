@@ -18,7 +18,7 @@ export default function ServerFullModal() {
       <div className={styles.card}>
         <p className={styles.eyebrow}>// connection error</p>
         <h2 className={styles.title}>Server is full</h2>
-        <p className={styles.message}>Server is full (100/100). Try again later.</p>
+        <p className={styles.message}>Server is full (200/200). Try again later.</p>
         <button className={styles.returnBtn} onClick={handleReturn}>
           Return to lobby
         </button>
