@@ -19,7 +19,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   modelKey: 'robot',
   joined: false,
   avatarScale: 1,
-  firstPerson: true,
+  firstPerson: !window.matchMedia('(hover: none) and (pointer: coarse)').matches,
   setPlayer: (name, modelKey) => set({ name, modelKey, joined: true }),
   setAvatarScale: (scale) => set({ avatarScale: Math.max(1, Math.min(10, scale)) }),
   toggleFirstPerson: () => set((s) => ({ firstPerson: !s.firstPerson })),

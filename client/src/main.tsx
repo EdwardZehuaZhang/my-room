@@ -24,7 +24,7 @@ function Root() {
           my-room
         </h1>
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-muted)', maxWidth: '300px', lineHeight: 1.7 }}>
-          This experience is optimized for desktop. Mobile support is in beta — things might look off or not work perfectly.
+          This experience is <span style={{ color: 'var(--lime)' }}>optimized for desktop</span>. Mobile support is in beta — things might look off or not work perfectly.
         </p>
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)', maxWidth: '300px', lineHeight: 1.6 }}>
           For the best experience, open on a laptop or computer.
