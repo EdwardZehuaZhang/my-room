@@ -2,7 +2,7 @@
  * Mobile splat renderer using @mkkellogg/gaussian-splats-3d.
  * Progressively loads and renders .splat files — shows partial data as it downloads.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 
 interface MobileSplatProps {
@@ -10,28 +10,51 @@ interface MobileSplatProps {
 }
 
 export default function MobileSplat({ src }: MobileSplatProps) {
-  const [viewer, setViewer] = useState<GaussianSplats3D.DropInViewer | null>(null);
+  const viewerRef = useRef<GaussianSplats3D.DropInViewer | null>(null);
+  const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
-    const instance = new GaussianSplats3D.DropInViewer({
-      gpuAcceleratedSort: true,
-      sceneRevealMode: GaussianSplats3D.SceneRevealMode.Instant,
-      sharedMemoryForWorkers: false,
-    });
+    let disposed = false;
 
-    instance.addSplatScene(src, {
-      progressiveLoad: true,
-      showLoadingUI: false,
-      splatAlphaRemovalThreshold: 5,
-    });
+    try {
+      const instance = new GaussianSplats3D.DropInViewer({
+        gpuAcceleratedSort: false,
+        sharedMemoryForWorkers: false,
+        sceneRevealMode: GaussianSplats3D.SceneRevealMode.Instant,
+      });
 
-    setViewer(instance);
+      viewerRef.current = instance;
+
+      if (groupRef.current) {
+        groupRef.current.add(instance);
+      }
+
+      instance.addSplatScene(src, {
+        progressiveLoad: true,
+        showLoadingUI: false,
+        splatAlphaRemovalThreshold: 5,
+      }).catch((err: unknown) => {
+        console.error('[MobileSplat] addSplatScene failed:', err);
+      });
+    } catch (err) {
+      console.error('[MobileSplat] DropInViewer init failed:', err);
+    }
 
     return () => {
-      instance.dispose();
+      disposed = true;
+      if (viewerRef.current) {
+        try {
+          if (groupRef.current) {
+            groupRef.current.remove(viewerRef.current);
+          }
+          viewerRef.current.dispose();
+        } catch (e) {
+          // dispose may throw if already cleaned up
+        }
+        viewerRef.current = null;
+      }
     };
   }, [src]);
 
-  if (!viewer) return null;
-  return <primitive object={viewer} />;
+  return <group ref={groupRef} />;
 }
