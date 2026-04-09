@@ -220,7 +220,7 @@
    ═══════════════════════════════════════════════════════ */
 @media (max-height: 450px) and (orientation: landscape) {
   .backdrop {
-    align-items: flex-start;
+    align-items: center;
     padding: 12px;
   }
 
@@ -239,6 +239,7 @@
 
   .title {
     font-size: 1.4rem;
+    order: -1;
   }
 
   .subtitle {
@@ -249,7 +250,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    align-items: start;
+    align-items: end;
   }
 
   .formLeft {
@@ -265,16 +266,18 @@
   }
 
   .fieldLabel {
-    margin-bottom: 0.3rem;
+    margin-top: 0;
+    margin-bottom: 0.2rem;
   }
 
   .nameInput {
-    padding: 0.5rem 0.75rem;
+    padding: 0.7rem 0.75rem;
     font-size: 0.82rem;
+    flex: 1;
   }
 
   .joinBtn {
-    padding: 0.6rem;
+    padding: 0.7rem;
     font-size: 0.88rem;
   }
 
