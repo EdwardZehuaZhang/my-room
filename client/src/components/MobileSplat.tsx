@@ -40,7 +40,6 @@ export default function MobileSplat({ src }: MobileSplatProps) {
     }
 
     return () => {
-      disposed = true;
       if (viewerRef.current) {
         try {
           if (groupRef.current) {
