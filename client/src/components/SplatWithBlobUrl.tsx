@@ -5,14 +5,8 @@
 import { Splat } from '@react-three/drei';
 import { useSplatBlobUrl } from '../hooks/useSplatBlobUrl';
 
-interface Props {
-  src: string;
-  onProgress?: (pct: number) => void;
-  onLoaded?: () => void;
-}
-
-export default function SplatWithBlobUrl({ src, onProgress, onLoaded }: Props) {
-  const { blobUrl } = useSplatBlobUrl(src, onProgress, onLoaded);
+export default function SplatWithBlobUrl({ src }: { src: string }) {
+  const { blobUrl } = useSplatBlobUrl(src);
   if (!blobUrl) return null;
   return <Splat src={blobUrl} />;
 }

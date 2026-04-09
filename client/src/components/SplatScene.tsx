@@ -17,15 +17,20 @@ interface SplatSceneProps {
 export default function SplatScene({ splatUrl, position, rotation, onProgress, onLoaded }: SplatSceneProps) {
   const { camera } = useThree();
 
-  // Set initial camera position
   useEffect(() => {
     camera.position.set(0, 2, 4);
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
+  // Let the user into the scene immediately; splat loads progressively in background
+  useEffect(() => {
+    onProgress(100);
+    onLoaded();
+  }, [onProgress, onLoaded]);
+
   return (
     <group position={position} rotation={rotation} renderOrder={-1}>
-      <SplatWithBlobUrl src={splatUrl} onProgress={onProgress} onLoaded={onLoaded} />
+      <SplatWithBlobUrl src={splatUrl} />
     </group>
   );
 }
