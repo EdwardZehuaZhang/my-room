@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react';
 
-/**
- * Fetches a splat file and returns a blob: URL.
- * CDN compression strips Content-Length which drei's SplatLoader requires.
- * Blob URLs always have a correct Content-Length.
- *
- * Streams the response body so onProgress fires during download.
- * If Content-Length is unavailable (Vercel Blob CDN), shows fake incremental
- * progress so the loading bar still animates.
- */
 export function useSplatBlobUrl(
   remoteUrl: string,
   onProgress?: (pct: number) => void,
+  onLoaded?: () => void,
 ) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -33,13 +25,12 @@ export function useSplatBlobUrl(
         const chunks: Uint8Array[] = [];
         let received = 0;
 
-        // Fake progress timer for when content-length is unavailable
+        // Fake progress timer when content-length is unavailable (Vercel CDN strips it)
         let fakeTimer: ReturnType<typeof setInterval> | null = null;
         let fakePct = 5;
         if (!total) {
           onProgress?.(fakePct);
           fakeTimer = setInterval(() => {
-            // Slow asymptotic approach to 90%
             fakePct = Math.min(90, fakePct + (90 - fakePct) * 0.08);
             if (!cancelled) onProgress?.(Math.round(fakePct));
           }, 300);
@@ -52,14 +43,18 @@ export function useSplatBlobUrl(
           chunks.push(value);
           received += value.length;
           if (total) {
-            onProgress?.(Math.round((received / total) * 95)); // cap at 95 until blob ready
+            onProgress?.(Math.round((received / total) * 95));
           }
         }
 
         if (fakeTimer) clearInterval(fakeTimer);
         if (cancelled) return;
 
-        onProgress?.(98);
+        // Download complete — show 100% and dismiss loading overlay immediately.
+        // Blob creation may still take a moment on low-end mobile devices.
+        onProgress?.(100);
+        onLoaded?.();
+
         const blob = new Blob(chunks as BlobPart[]);
         const url = URL.createObjectURL(blob);
 
@@ -80,7 +75,7 @@ export function useSplatBlobUrl(
       setBlobUrl(null);
       setError(null);
     };
-  }, [remoteUrl]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [remoteUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { blobUrl, error };
 }
