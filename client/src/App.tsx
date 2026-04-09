@@ -111,17 +111,13 @@ export default function App() {
           <ControlsPanel />
           <SizeSlider />
           <RoomSwitcher activeRoom={activeRoom} onSwitch={handleRoomSwitch} />
-          {loaded && (
-            <>
-              <MobileNavBar
-                activeSheet={mobileSheet}
-                onToggleSheet={handleToggleSheet}
-                activeRoom={activeRoom}
-                onSwitch={handleRoomSwitch}
-              />
-              <MobileJoysticks joystickRef={joystickRef} joystickCamRef={joystickCamRef} mobileFlyRef={mobileFlyRef} />
-            </>
-          )}
+          <MobileNavBar
+            activeSheet={mobileSheet}
+            onToggleSheet={handleToggleSheet}
+            activeRoom={activeRoom}
+            onSwitch={handleRoomSwitch}
+          />
+          <MobileJoysticks joystickRef={joystickRef} joystickCamRef={joystickCamRef} mobileFlyRef={mobileFlyRef} />
         </>
       ) : (
         <EntryScreen />
