@@ -18,7 +18,9 @@ import SizeSlider from './components/SizeSlider.tsx';
 
 export default function App() {
   const joined = usePlayerStore((s) => s.joined);
-  const [activeRoom, setActiveRoom] = useState('glitched');
+  const [activeRoom, setActiveRoom] = useState(() =>
+    window.matchMedia('(hover: none)').matches ? 'room2' : 'glitched'
+  );
   const [progress, setProgress] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
