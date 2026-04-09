@@ -60,7 +60,7 @@ export function useSplatBlobUrl(
         if (cancelled) return;
 
         onProgress?.(98);
-        const blob = new Blob(chunks);
+        const blob = new Blob(chunks as BlobPart[]);
         const url = URL.createObjectURL(blob);
 
         if (!cancelled) {
