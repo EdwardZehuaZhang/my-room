@@ -1,13 +1,11 @@
 /**
  * Splat renderer.
- * - Desktop: drei <Splat> via blob URL (Vercel CDN strips Content-Length; blob URL restores it)
- * - Mobile:  drei <Splat> with the direct URL. Content-Length is missing so there's no progress
- *            bar, but the underlying antimatter15 XHR still fires onload and the splat renders.
- *            The blob workaround is skipped because iOS kills large background blob allocations.
+ * - Desktop: @react-three/drei <Splat> via blob URL (works around Vercel CDN stripping Content-Length)
+ * - Mobile:  LumaSplatsThree streams directly from the URL (no Content-Length needed, no large blob in memory)
  */
-import { useEffect, useRef } from 'react';
-import { Splat } from '@react-three/drei';
+import { useEffect, useRef, useState } from 'react';
 import { useThree } from '@react-three/fiber';
+import { LumaSplatsThree } from '@lumaai/luma-web';
 import SplatWithBlobUrl from './SplatWithBlobUrl.tsx';
 
 export const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
@@ -20,13 +18,33 @@ interface SplatSceneProps {
   onLoaded: () => void;
 }
 
-/** Starts loading the splat in the preview canvas (before the user joins). */
-export function SplatPreload({ src }: { src: string }) {
-  if (isMobile) {
-    // Direct URL — no blob needed; XHR will load without Content-Length
-    return <Splat src={src} />;
-  }
-  return <SplatWithBlobUrl src={src} />;
+/** Used in the preview canvas (before joining) to kick off the LumaSplats download early. */
+export function MobileSplatPreload({ src }: { src: string }) {
+  const [splat] = useState(() => new LumaSplatsThree({
+    source: src,
+    enableThreeShaderIntegration: true,
+  }));
+  useEffect(() => () => splat.dispose(), [splat]);
+  return <primitive object={splat} />;
+}
+
+function MobileSplat({ splatUrl }: { splatUrl: string }) {
+  const [splat, setSplat] = useState<LumaSplatsThree | null>(null);
+
+  useEffect(() => {
+    const instance = new LumaSplatsThree({
+      source: splatUrl,
+      enableThreeShaderIntegration: true,
+    });
+    setSplat(instance);
+    return () => {
+      instance.dispose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [splatUrl]);
+
+  if (!splat) return null;
+  return <primitive object={splat} />;
 }
 
 export default function SplatScene({ splatUrl, position, rotation, onProgress, onLoaded }: SplatSceneProps) {
@@ -48,9 +66,9 @@ export default function SplatScene({ splatUrl, position, rotation, onProgress, o
   }, []);
 
   return (
-    <group position={position} rotation={rotation} renderOrder={isMobile ? 0 : -1}>
+    <group position={position} rotation={rotation} renderOrder={-1}>
       {isMobile
-        ? <Splat src={splatUrl} />
+        ? <MobileSplat splatUrl={splatUrl} />
         : <SplatWithBlobUrl src={splatUrl} />
       }
     </group>
