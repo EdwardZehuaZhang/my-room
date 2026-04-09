@@ -18,7 +18,7 @@ function Root() {
         background: 'var(--bg-void)', padding: '2rem', textAlign: 'center',
       }}>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--lime)' }}>
-          {'// heads up'}
+          {'// desktop only'}
         </span>
         <h1 style={{ fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: '2rem', color: 'var(--text-primary)', lineHeight: 1.1 }}>
           my-room
