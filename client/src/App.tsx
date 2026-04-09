@@ -6,7 +6,7 @@ import LoadingOverlay from './components/LoadingOverlay.tsx';
 import SceneContent from './components/SceneContent.tsx';
 import PreviewCamera from './components/PreviewCamera.tsx';
 import SplatWithBlobUrl from './components/SplatWithBlobUrl.tsx';
-import { isMobile, MobileSplatPreload } from './components/SplatScene.tsx';
+import { isMobile } from './components/SplatScene.tsx';
 import ServerFullModal from './components/ServerFullModal.tsx';
 import MobileJoysticks from './components/MobileJoysticks.tsx';
 import ChatPanel from './components/ChatPanel.tsx';
@@ -19,7 +19,7 @@ import SizeSlider from './components/SizeSlider.tsx';
 
 export default function App() {
   const joined = usePlayerStore((s) => s.joined);
-  const [activeRoom, setActiveRoom] = useState(isMobile ? 'room2' : 'glitched');
+  const [activeRoom, setActiveRoom] = useState(isMobile ? 'room1' : 'glitched');
   const [progress, setProgress] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
@@ -97,10 +97,7 @@ export default function App() {
               <PreviewCamera />
               <ambientLight intensity={0.6} />
               <group position={position} rotation={rotation} renderOrder={-1}>
-                {isMobile
-                  ? <MobileSplatPreload src={splatUrl} />
-                  : <SplatWithBlobUrl src={splatUrl} />
-                }
+                <SplatWithBlobUrl src={splatUrl} />
               </group>
             </>
           )}
