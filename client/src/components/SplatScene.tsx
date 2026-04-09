@@ -1,11 +1,11 @@
 /**
  * Splat renderer.
- * - Desktop: @react-three/drei <Splat> via blob URL (works around Vercel CDN stripping Content-Length)
- * - Mobile:  LumaSplatsThree streams directly from the URL (no Content-Length needed, no large blob in memory)
+ * - Desktop: SplatWithBlobUrl (blob URL workaround for Vercel CDN stripping Content-Length)
+ * - Mobile:  <Splat src={url}> directly — worked at 6bd5504, no blob buffering needed
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
-import { LumaSplatsThree } from '@lumaai/luma-web';
+import { Splat } from '@react-three/drei';
 import SplatWithBlobUrl from './SplatWithBlobUrl.tsx';
 
 export const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
@@ -16,35 +16,6 @@ interface SplatSceneProps {
   rotation: [number, number, number];
   onProgress: (pct: number) => void;
   onLoaded: () => void;
-}
-
-/** Used in the preview canvas (before joining) to kick off the LumaSplats download early. */
-export function MobileSplatPreload({ src }: { src: string }) {
-  const [splat] = useState(() => new LumaSplatsThree({
-    source: src,
-    enableThreeShaderIntegration: true,
-  }));
-  useEffect(() => () => splat.dispose(), [splat]);
-  return <primitive object={splat} />;
-}
-
-function MobileSplat({ splatUrl }: { splatUrl: string }) {
-  const [splat, setSplat] = useState<LumaSplatsThree | null>(null);
-
-  useEffect(() => {
-    const instance = new LumaSplatsThree({
-      source: splatUrl,
-      enableThreeShaderIntegration: true,
-    });
-    setSplat(instance);
-    return () => {
-      instance.dispose();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [splatUrl]);
-
-  if (!splat) return null;
-  return <primitive object={splat} />;
 }
 
 export default function SplatScene({ splatUrl, position, rotation, onProgress, onLoaded }: SplatSceneProps) {
@@ -59,7 +30,6 @@ export default function SplatScene({ splatUrl, position, rotation, onProgress, o
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
-  // Let the user into the scene immediately; splat loads progressively in background
   useEffect(() => {
     onProgressRef.current(100);
     onLoadedRef.current();
@@ -68,7 +38,7 @@ export default function SplatScene({ splatUrl, position, rotation, onProgress, o
   return (
     <group position={position} rotation={rotation} renderOrder={-1}>
       {isMobile
-        ? <MobileSplat splatUrl={splatUrl} />
+        ? <Splat src={splatUrl} />
         : <SplatWithBlobUrl src={splatUrl} />
       }
     </group>
