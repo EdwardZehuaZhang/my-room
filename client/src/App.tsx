@@ -1,11 +1,11 @@
 import { Suspense, useCallback, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Splat } from '@react-three/drei';
 import { usePlayerStore } from './store.ts';
 import EntryScreen from './components/EntryScreen.tsx';
 import LoadingOverlay from './components/LoadingOverlay.tsx';
 import SceneContent from './components/SceneContent.tsx';
 import PreviewCamera from './components/PreviewCamera.tsx';
+import SplatWithBlobUrl from './components/SplatWithBlobUrl.tsx';
 import ServerFullModal from './components/ServerFullModal.tsx';
 import MobileJoysticks from './components/MobileJoysticks.tsx';
 import ChatPanel from './components/ChatPanel.tsx';
@@ -96,7 +96,7 @@ export default function App() {
               <PreviewCamera />
               <ambientLight intensity={0.6} />
               <group position={position} rotation={rotation} renderOrder={-1}>
-                <Splat src={splatUrl} />
+                <SplatWithBlobUrl src={splatUrl} />
               </group>
             </>
           )}

@@ -4,8 +4,8 @@
  */
 import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Splat } from '@react-three/drei';
 import { GLITCHED_BASE } from './RoomSwitcher.tsx';
+import SplatWithBlobUrl from './SplatWithBlobUrl.tsx';
 
 const RADIUS = 5;
 const HEIGHT = 2.5;
@@ -45,7 +45,7 @@ export default function SplatPreviewBg() {
       >
         <RotatingCamera />
         <group position={position} rotation={rotation} renderOrder={-1}>
-          <Splat src={splatUrl} />
+          <SplatWithBlobUrl src={splatUrl} />
         </group>
       </Canvas>
     </div>
