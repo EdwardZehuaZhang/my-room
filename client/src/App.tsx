@@ -5,8 +5,7 @@ import EntryScreen from './components/EntryScreen.tsx';
 import LoadingOverlay from './components/LoadingOverlay.tsx';
 import SceneContent from './components/SceneContent.tsx';
 import PreviewCamera from './components/PreviewCamera.tsx';
-import SplatWithBlobUrl from './components/SplatWithBlobUrl.tsx';
-import { isMobile, MobileSplatPreload } from './components/SplatScene.tsx';
+import { isMobile, SplatPreload } from './components/SplatScene.tsx';
 import ServerFullModal from './components/ServerFullModal.tsx';
 import MobileJoysticks from './components/MobileJoysticks.tsx';
 import ChatPanel from './components/ChatPanel.tsx';
@@ -96,11 +95,8 @@ export default function App() {
             <>
               <PreviewCamera />
               <ambientLight intensity={0.6} />
-              <group position={position} rotation={rotation} renderOrder={-1}>
-                {isMobile
-                  ? <MobileSplatPreload src={splatUrl} />
-                  : <SplatWithBlobUrl src={splatUrl} />
-                }
+              <group position={position} rotation={rotation} renderOrder={isMobile ? 0 : -1}>
+                <SplatPreload src={splatUrl} />
               </group>
             </>
           )}
