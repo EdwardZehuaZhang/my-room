@@ -2,10 +2,16 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './globals.css';
 import App from './App.tsx';
+import { prefetchSplat } from './hooks/useSplatBlobUrl.ts';
+import { ROOMS, GLITCHED_BASE } from './components/RoomSwitcher.tsx';
 
 import { useState } from 'react';
 
 const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+// Start fetching the default splat immediately at module load time,
+// before React bootstraps or the Canvas mounts.
+prefetchSplat(isMobile ? ROOMS.find((r) => r.key === 'room2')!.splatUrl : GLITCHED_BASE.splatUrl);
 
 function MobileGate({ onProceed }: { onProceed: () => void }) {
   return (

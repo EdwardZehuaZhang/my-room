@@ -1,9 +1,30 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Fetches a splat file and returns a blob: URL.
- * CDN compression strips Content-Length which drei's SplatLoader requires.
- * Blob URLs always have a correct Content-Length.
+ * Global blob cache — keyed by URL, stores the fetched Blob.
+ * Call prefetchSplat() at module level to start the download
+ * before React even bootstraps.
+ */
+const blobCache = new Map<string, Promise<Blob>>();
+
+/** Kick off a splat download immediately. Safe to call multiple times. */
+export function prefetchSplat(url: string) {
+  if (!blobCache.has(url)) {
+    blobCache.set(
+      url,
+      fetch(url).then((res) => {
+        if (!res.ok) throw new Error(`Failed to fetch splat: ${res.status}`);
+        return res.blob();
+      }),
+    );
+  }
+}
+
+/**
+ * Returns a blob: URL for a splat file.
+ * Uses the global cache so a prefetchSplat() call resolves instantly here.
+ * CDN compression strips Content-Length which drei's SplatLoader requires;
+ * blob URLs always have a correct Content-Length.
  */
 export function useSplatBlobUrl(remoteUrl: string) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -13,22 +34,20 @@ export function useSplatBlobUrl(remoteUrl: string) {
     let revoke: string | null = null;
     let cancelled = false;
 
-    (async () => {
-      try {
-        const res = await fetch(remoteUrl);
-        if (!res.ok) throw new Error(`Failed to fetch splat: ${res.status}`);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        if (!cancelled) {
-          revoke = url;
-          setBlobUrl(url);
-        } else {
-          URL.revokeObjectURL(url);
-        }
-      } catch (e) {
-        if (!cancelled) setError(e as Error);
+    // Ensure the fetch is in the cache (no-op if prefetchSplat already called)
+    prefetchSplat(remoteUrl);
+
+    blobCache.get(remoteUrl)!.then((blob) => {
+      const url = URL.createObjectURL(blob);
+      if (!cancelled) {
+        revoke = url;
+        setBlobUrl(url);
+      } else {
+        URL.revokeObjectURL(url);
       }
-    })();
+    }).catch((e) => {
+      if (!cancelled) setError(e as Error);
+    });
 
     return () => {
       cancelled = true;
