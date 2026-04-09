@@ -6,6 +6,7 @@ import LoadingOverlay from './components/LoadingOverlay.tsx';
 import SceneContent from './components/SceneContent.tsx';
 import PreviewCamera from './components/PreviewCamera.tsx';
 import SplatWithBlobUrl from './components/SplatWithBlobUrl.tsx';
+import MobileSplat from './components/MobileSplat.tsx';
 import { isMobile } from './components/SplatScene.tsx';
 import ServerFullModal from './components/ServerFullModal.tsx';
 import MobileJoysticks from './components/MobileJoysticks.tsx';
@@ -97,7 +98,10 @@ export default function App() {
               <PreviewCamera />
               <ambientLight intensity={0.6} />
               <group position={position} rotation={rotation} renderOrder={-1}>
-                <SplatWithBlobUrl src={splatUrl} />
+                {isMobile
+                  ? <MobileSplat src={splatUrl} />
+                  : <SplatWithBlobUrl src={splatUrl} />
+                }
               </group>
             </>
           )}

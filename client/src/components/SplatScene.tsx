@@ -1,11 +1,12 @@
 /**
  * Splat renderer.
- * Uses @react-three/drei <Splat> via blob URL on all platforms
- * (works around Vercel CDN stripping Content-Length).
+ * - Desktop: @react-three/drei <Splat> via blob URL (works around Vercel CDN stripping Content-Length)
+ * - Mobile:  @mkkellogg/gaussian-splats-3d with progressive loading (renders chunks as they download)
  */
 import { useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import SplatWithBlobUrl from './SplatWithBlobUrl.tsx';
+import MobileSplat from './MobileSplat.tsx';
 
 export const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
@@ -37,7 +38,10 @@ export default function SplatScene({ splatUrl, position, rotation, onProgress, o
 
   return (
     <group position={position} rotation={rotation} renderOrder={-1}>
-      <SplatWithBlobUrl src={splatUrl} />
+      {isMobile
+        ? <MobileSplat src={splatUrl} />
+        : <SplatWithBlobUrl src={splatUrl} />
+      }
     </group>
   );
 }

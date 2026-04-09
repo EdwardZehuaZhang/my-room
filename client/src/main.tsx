@@ -3,16 +3,17 @@ import { createRoot } from 'react-dom/client';
 import './globals.css';
 import App from './App.tsx';
 import { prefetchSplat } from './hooks/useSplatBlobUrl.ts';
-import { ROOMS, GLITCHED_BASE } from './components/RoomSwitcher.tsx';
+import { GLITCHED_BASE } from './components/RoomSwitcher.tsx';
 
 import { useState } from 'react';
 
 const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-// Start fetching the default splat blob at module load time,
-// before React bootstraps or the Canvas mounts.
-// Mobile defaults to room1 (Midnight, smallest at 64MB), desktop to glitched.
-prefetchSplat(isMobile ? ROOMS.find((r) => r.key === 'room1')!.splatUrl : GLITCHED_BASE.splatUrl);
+// Desktop: start fetching the default splat blob at module load time.
+// Mobile uses gaussian-splats-3d which streams progressively on its own.
+if (!isMobile) {
+  prefetchSplat(GLITCHED_BASE.splatUrl);
+}
 
 function MobileGate({ onProceed }: { onProceed: () => void }) {
   return (
