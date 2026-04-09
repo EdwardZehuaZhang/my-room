@@ -8,7 +8,7 @@ import { useThree } from '@react-three/fiber';
 import { LumaSplatsThree } from '@lumaai/luma-web';
 import SplatWithBlobUrl from './SplatWithBlobUrl.tsx';
 
-const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+export const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
 interface SplatSceneProps {
   splatUrl: string;
@@ -18,7 +18,17 @@ interface SplatSceneProps {
   onLoaded: () => void;
 }
 
-function MobileSplat({ splatUrl, onProgress, onLoaded }: Pick<SplatSceneProps, 'splatUrl' | 'onProgress' | 'onLoaded'>) {
+/** Used in the preview canvas (before joining) to kick off the LumaSplats download early. */
+export function MobileSplatPreload({ src }: { src: string }) {
+  const [splat] = useState(() => new LumaSplatsThree({
+    source: src,
+    enableThreeShaderIntegration: true,
+  }));
+  useEffect(() => () => splat.dispose(), [splat]);
+  return <primitive object={splat} />;
+}
+
+function MobileSplat({ splatUrl }: { splatUrl: string }) {
   const [splat, setSplat] = useState<LumaSplatsThree | null>(null);
 
   useEffect(() => {
@@ -26,12 +36,7 @@ function MobileSplat({ splatUrl, onProgress, onLoaded }: Pick<SplatSceneProps, '
       source: splatUrl,
       enableThreeShaderIntegration: true,
     });
-
-    instance.onProgress = (e) => onProgress(Math.round(e.progress * 100));
-    instance.onLoad = () => onLoaded();
-
     setSplat(instance);
-
     return () => {
       instance.dispose();
     };
@@ -44,29 +49,26 @@ function MobileSplat({ splatUrl, onProgress, onLoaded }: Pick<SplatSceneProps, '
 
 export default function SplatScene({ splatUrl, position, rotation, onProgress, onLoaded }: SplatSceneProps) {
   const { camera } = useThree();
-
-  useEffect(() => {
-    camera.position.set(0, 2, 4);
-    camera.lookAt(0, 0, 0);
-  }, [camera]);
-
-  // Desktop: let the user in immediately, splat streams in background
   const onProgressRef = useRef(onProgress);
   const onLoadedRef = useRef(onLoaded);
   onProgressRef.current = onProgress;
   onLoadedRef.current = onLoaded;
 
   useEffect(() => {
-    if (!isMobile) {
-      onProgressRef.current(100);
-      onLoadedRef.current();
-    }
+    camera.position.set(0, 2, 4);
+    camera.lookAt(0, 0, 0);
+  }, [camera]);
+
+  // Let the user into the scene immediately; splat loads progressively in background
+  useEffect(() => {
+    onProgressRef.current(100);
+    onLoadedRef.current();
   }, []);
 
   return (
     <group position={position} rotation={rotation} renderOrder={-1}>
       {isMobile
-        ? <MobileSplat splatUrl={splatUrl} onProgress={onProgress} onLoaded={onLoaded} />
+        ? <MobileSplat splatUrl={splatUrl} />
         : <SplatWithBlobUrl src={splatUrl} />
       }
     </group>
