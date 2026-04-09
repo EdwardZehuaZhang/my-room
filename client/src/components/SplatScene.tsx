@@ -23,15 +23,9 @@ export default function SplatScene({ splatUrl, position, rotation, onProgress, o
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
-  // Signal loaded
-  useEffect(() => {
-    onProgress(100);
-    onLoaded();
-  }, [onProgress, onLoaded]);
-
   return (
     <group position={position} rotation={rotation} renderOrder={-1}>
-      <SplatWithBlobUrl src={splatUrl} />
+      <SplatWithBlobUrl src={splatUrl} onProgress={onProgress} onLoaded={onLoaded} />
     </group>
   );
 }
